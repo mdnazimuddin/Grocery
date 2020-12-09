@@ -133,7 +133,7 @@ class SliderImages {
 }
 
 class Category {
-  String id;
+  int id;
   String name;
   String img;
   Category({
@@ -149,7 +149,7 @@ class Category {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.name;
+    data['id'] = this.id;
     data['name'] = this.name;
     data['img'] = this.img;
 
