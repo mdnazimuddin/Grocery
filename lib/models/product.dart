@@ -1,21 +1,19 @@
-import 'package:Uthbay/models/grocery.dart';
-
 class Product {
-  String id;
-  String groceriyID;
-  String name;
-  String sku;
-  String price;
-  String regularPrice;
-  String salePrice;
-  String stockStatus;
-  String description;
-  String sortDescription;
+  dynamic id;
+  dynamic groceryID;
+  dynamic name;
+  dynamic sku;
+  dynamic price;
+  dynamic regularPrice;
+  dynamic salePrice;
+  dynamic stockStatus;
+  dynamic description;
+  dynamic sortDescription;
   List<ProductImage> images;
-  List<Category> categories;
+  List<ProductCategory> categories;
   Product({
     this.id,
-    this.groceriyID,
+    this.groceryID,
     this.name,
     this.sku,
     this.price,
@@ -28,20 +26,21 @@ class Product {
     this.categories,
   });
   Product.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    groceriyID = json['grocery_id'];
+    id = json['id'].toString();
+    groceryID = json['grocery_id'].toString();
     name = json['name'];
     sku = json['sku'];
     regularPrice = json['regular_price'];
-    salePrice = json['sale_price'];
+    salePrice =
+        json['sale_price'] != "" ? json['sale_price'] : json['regular_price'];
     stockStatus = json['stock_status'];
     description = json['description'];
     sortDescription = json['sort_description'];
 
     if (json['categories'] != null) {
-      categories = new List<Category>();
+      categories = new List<ProductCategory>();
       json['categories'].forEach((v) {
-        categories.add(new Category.fromJson(v));
+        categories.add(new ProductCategory.fromJson(v));
       });
     }
     if (json['images'] != null) {
@@ -51,12 +50,46 @@ class Product {
       });
     }
   }
+  calculateDiscount() {
+    dynamic regularPrice = double.parse(this.regularPrice);
+    dynamic salePrice =
+        this.salePrice != "" ? double.parse(this.salePrice) : regularPrice;
+    dynamic discount = regularPrice - salePrice;
+    dynamic disPercent = (discount / regularPrice) * 100;
+
+    return disPercent.round();
+  }
 }
 
 class ProductImage {
-  String src;
+  dynamic src;
   ProductImage({this.src});
   ProductImage.fromJson(Map<String, dynamic> json) {
     src = json['src'];
+  }
+}
+
+class ProductCategory {
+  dynamic id;
+  dynamic name;
+  dynamic img;
+  ProductCategory({
+    this.id,
+    this.name,
+    this.img,
+  });
+  ProductCategory.fromJson(Map<String, dynamic> json) {
+    id = json['id'].toString();
+    name = json['name'];
+    img = json['img'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['id'] = this.id;
+    data['name'] = this.name;
+    data['img'] = this.img;
+
+    return data;
   }
 }

@@ -55,7 +55,7 @@ class _WidgetShopProductsState extends State<WidgetShopProducts> {
 
   Widget _productsList() {
     return FutureBuilder(
-      future: apiService.getProductWithTags(this.widget.tagId),
+      future: apiService.getProducts(tagId: this.widget.tagId),
       builder: (BuildContext context, snapshot) {
         if (!snapshot.hasData)
           return Center(

@@ -1,6 +1,3 @@
-import 'dart:html';
-import 'dart:ui';
-
 import 'package:Uthbay/models/product.dart';
 import 'package:flutter/material.dart';
 
@@ -27,6 +24,26 @@ class ProductCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
+                Visibility(
+                  visible: data.calculateDiscount() > 0,
+                  child: Align(
+                    alignment: Alignment.topLeft,
+                    child: Container(
+                      padding: EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.green,
+                        borderRadius: BorderRadius.circular(50),
+                      ),
+                      child: Text(
+                        '${data.calculateDiscount()}% OFF',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
                 Flexible(
                   child: Stack(
                     alignment: Alignment.center,
@@ -38,7 +55,7 @@ class ProductCard extends StatelessWidget {
                       Image.network(
                         data.images.length > 0
                             ? data.images[0].src
-                            : "https://tse3.mm.bing.net/th?id=OIP.WHflYwI2ImueYl0j8lMajQAAAA&pid=Api&P=0&w=300&h=300",
+                            : "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/768px-No_image_available.svg.png",
                         height: 160,
                       ),
                     ],
