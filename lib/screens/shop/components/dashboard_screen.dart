@@ -60,7 +60,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget imageCarousel(BuildContext context) {
     return new Container(
       width: MediaQuery.of(context).size.width,
-      height: 200.0,
+      height: 220.0,
       child: FutureBuilder<Object>(
           future: apiService.getGroceryImages(url),
           builder: (context, snapshot) {

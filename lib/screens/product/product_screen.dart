@@ -4,9 +4,7 @@ import 'package:Uthbay/models/product.dart';
 import 'package:Uthbay/provider/products_provider.dart';
 import 'package:Uthbay/screens/base/base_screen.dart';
 import 'package:Uthbay/screens/product/widgets/product_card.dart';
-import 'package:Uthbay/services/api_service.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_carousel_slider/carousel_slider_indicators.dart';
 import 'package:provider/provider.dart';
 
 class ProductScreen extends BaseScreen {
@@ -46,20 +44,24 @@ class _ProductScreenState extends BaseScreenState<ProductScreen> {
       });
     });
 
-    _searchQuery.addListener(_onSearchChang);
+    // _searchQuery.addListener(_onSearchChang);
   }
 
   _onSearchChang() {
     var productList = Provider.of<ProductProvider>(context, listen: false);
     if (_debounce?.isActive ?? false) _debounce.cancel();
 
-    _debounce = Timer(const Duration(microseconds: 5000), () {
-      productList.resetStreams();
-      productList.setLoadingState(LoadMoreStatus.INITIAL);
-      productList.fetchProducts(_page,
-          strSerach: _searchQuery.text,
-          categoryId: widget.categoryId.toString());
-    });
+    // _debounce = Timer(const Duration(milliseconds: 1000), () {
+    //   productList.resetStreams();
+    //   productList.setLoadingState(LoadMoreStatus.INITIAL);
+    //   productList.fetchProducts(_page,
+    //       strSerach: _searchQuery.text,
+    //       categoryId: widget.categoryId.toString());
+    // });
+    productList.resetStreams();
+    productList.setLoadingState(LoadMoreStatus.INITIAL);
+    productList.fetchProducts(_page,
+        strSerach: _searchQuery.text, categoryId: widget.categoryId.toString());
   }
 
   @override
@@ -126,6 +128,9 @@ class _ProductScreenState extends BaseScreenState<ProductScreen> {
           Flexible(
             child: TextField(
               controller: _searchQuery,
+              onSubmitted: (value) {
+                this._onSearchChang();
+              },
               decoration: InputDecoration(
                 prefixIcon: Icon(Icons.search),
                 hintText: "Search",

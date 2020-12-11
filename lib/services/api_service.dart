@@ -338,6 +338,7 @@ class APIService {
     dynamic strSerach,
     dynamic tagId,
     dynamic categoryId,
+    List<int> productIds,
     dynamic sortBy,
     dynamic sortOrder,
   }) async {
@@ -359,6 +360,9 @@ class APIService {
       }
       if (categoryId != null) {
         parameter += "&category=$categoryId";
+      }
+      if (productIds != null) {
+        parameter += "&include=${productIds.join(",").toString()}";
       }
       if (sortBy != null) {
         parameter += "&sortBy=$sortBy";

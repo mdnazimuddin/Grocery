@@ -2,21 +2,21 @@ import 'package:Uthbay/models/product.dart';
 import 'package:Uthbay/services/api_service.dart';
 import 'package:flutter/material.dart';
 
-class WidgetShopProducts extends StatefulWidget {
+class RelatedProducts extends StatefulWidget {
   String labelName;
-  String tagId;
-  WidgetShopProducts({this.labelName, this.tagId});
+  List<int> products;
+
+  RelatedProducts({this.labelName, this.products});
   @override
-  _WidgetShopProductsState createState() => _WidgetShopProductsState();
+  _RelatedProductsState createState() => _RelatedProductsState();
 }
 
-class _WidgetShopProductsState extends State<WidgetShopProducts> {
+class _RelatedProductsState extends State<RelatedProducts> {
   APIService apiService;
-
   @override
-  void initState() {
+  initState() {
+    apiService = APIService();
     super.initState();
-    apiService = new APIService();
   }
 
   @override
@@ -55,7 +55,7 @@ class _WidgetShopProductsState extends State<WidgetShopProducts> {
 
   Widget _productsList() {
     return FutureBuilder(
-      future: apiService.getProducts(tagId: this.widget.tagId),
+      future: apiService.getProducts(categoryId: 2),
       builder: (BuildContext context, snapshot) {
         if (!snapshot.hasData)
           return Center(
