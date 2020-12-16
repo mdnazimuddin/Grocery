@@ -94,9 +94,9 @@ class CartProvider with ChangeNotifier {
     CartRequestModel requestModel = new CartRequestModel();
     requestModel.products = new List<CartProducts>();
     requestModel.groceryId = groceryId;
-    // if (_cartItems == null) {
-    //   await fetchCartItems(groceryId);
-    // }
+    if (_cartItems == null) {
+      await fetchCartItems(groceryId);
+    }
 
     _cartItems.forEach((element) {
       print("Debug:");

@@ -8,7 +8,6 @@ import 'package:Uthbay/utilis/custom_stepper.dart';
 import 'package:Uthbay/utilis/expand_text.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 
 class ProductDetailsWidget extends StatelessWidget {
@@ -16,12 +15,14 @@ class ProductDetailsWidget extends StatelessWidget {
   List<VariableProduct> variableProducts;
   ProductDetailsWidget({this.data, this.variableProducts});
   int qty = 0;
+  var dropdownValue = null;
 
   CartProducts cartProducts = new CartProducts();
   final CarouselController _carouselController = CarouselController();
   @override
   Widget build(BuildContext context) {
-    print("Variable Product: ${this.variableProducts[0].id}");
+    // print("Variable Product: ${this.variableProducts[0].id}");
+    // print(data.attributes[0].option);
     return SingleChildScrollView(
       child: Container(
         color: Colors.white,
@@ -66,25 +67,28 @@ class ProductDetailsWidget extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Visibility(
-                      visible: data.type != "variable",
-                      child: Text(
-                        data.attributes != null && data.attributes.length > 0
-                            ? (data.attributes[0].option +
-                                " " +
-                                data.attributes[0].name)
-                            : "",
-                      ),
-                    ),
-                    Visibility(
-                      visible: data.type == "variable",
-                      child: selectDropdown(context, "", this.variableProducts,
-                          (VariableProduct value) {
-                        print(value.salePrice);
-                        this.data.salePrice = value.salePrice;
-                        this.data.variableProduct = value;
-                      }),
-                    ),
+                    data.type != "variable"
+                        ? Visibility(
+                            visible: data.type != "variable",
+                            child: Text(
+                              data.attributes != null &&
+                                      data.attributes.length > 0
+                                  ? (data.attributes[0].option +
+                                      " " +
+                                      data.attributes[0].name)
+                                  : "",
+                            ),
+                          )
+                        : Visibility(
+                            visible: data.type == "variable",
+                            child: selectDropdown(
+                                context, "", this.variableProducts,
+                                (VariableProduct value) {
+                              print(value.salePrice);
+                              this.data.salePrice = value.salePrice;
+                              this.data.variableProduct = value;
+                            }),
+                          ),
                     Text(' \$${data.salePrice}',
                         style: TextStyle(
                             color: Colors.black,
@@ -218,14 +222,15 @@ class ProductDetailsWidget extends StatelessWidget {
     );
   }
 
-  static Widget selectDropdown(
+  Widget selectDropdown(
     BuildContext context,
     Object initialValue,
-    dynamic data,
+    dynamic dataModel,
     Function onChange, {
     Function onValidate,
   }) {
-    print("data:${data[0].attributes.first.option}");
+    print("data:${dataModel[0].attributes.first.option}");
+    // this.data.salePrice = dataModel[0].salePrice;
     return Align(
       alignment: Alignment.topLeft,
       child: Container(
@@ -234,15 +239,18 @@ class ProductDetailsWidget extends StatelessWidget {
         padding: EdgeInsets.only(top: 5),
         child: new DropdownButtonFormField<VariableProduct>(
           hint: new Text("Select"),
-          value: data != null ? data[0] : null,
+          value: dropdownValue,
+          // value: dataModel != null ? dataModel[0] : null,
           isDense: true,
           decoration: fieldDecoration(context, "", ""),
           onChanged: (VariableProduct newValue) {
             FocusScope.of(context).requestFocus(new FocusNode());
+            this.data.salePrice = newValue.salePrice;
+            dropdownValue = newValue;
             onChange(newValue);
           },
-          items: data != null
-              ? data.map<DropdownMenuItem<VariableProduct>>(
+          items: dataModel != null
+              ? dataModel.map<DropdownMenuItem<VariableProduct>>(
                   (VariableProduct data) {
                   return DropdownMenuItem<VariableProduct>(
                     value: data,

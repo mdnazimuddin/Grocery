@@ -70,95 +70,93 @@ class _CartPageState extends State<CartPage> {
                         );
                       },
                     ),
-                    Padding(
-                      padding: EdgeInsets.all(10),
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: FlatButton(
-                          child: Wrap(
-                            alignment: WrapAlignment.center,
-                            crossAxisAlignment: WrapCrossAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.sync,
-                                color: Colors.white,
-                              ),
-                              Text(
-                                "Update Cart",
-                                style: TextStyle(color: Colors.white),
-                              )
-                            ],
-                          ),
-                          onPressed: () {
-                            Provider.of<LoaderProvider>(context, listen: false)
-                                .setLoadingStatus(true);
-                            var cartProvider = Provider.of<CartProvider>(
-                                context,
-                                listen: false);
-                            cartProvider.updateCart(
-                              int.parse(widget.groceryId),
-                              (val) {
-                                Provider.of<LoaderProvider>(context,
-                                        listen: false)
-                                    .setLoadingStatus(false);
-                                print(val);
-                              },
-                            );
-                          },
-                          padding: EdgeInsets.all(5),
-                          color: Colors.green,
-                          shape: StadiumBorder(),
-                        ),
-                      ),
-                    ),
+                    // Padding(
+                    //   padding: EdgeInsets.all(10),
+                    //   child: Align(
+                    //     alignment: Alignment.centerRight,
+                    //     child: FlatButton(
+                    //       child: Wrap(
+                    //         alignment: WrapAlignment.center,
+                    //         crossAxisAlignment: WrapCrossAlignment.center,
+                    //         children: [
+                    //           Icon(
+                    //             Icons.sync,
+                    //             color: Colors.white,
+                    //           ),
+                    //           Text(
+                    //             "Update Cart",
+                    //             style: TextStyle(color: Colors.white),
+                    //           )
+                    //         ],
+                    //       ),
+                    //       onPressed: () {
+                    //         Provider.of<LoaderProvider>(context, listen: false)
+                    //             .setLoadingStatus(true);
+                    //         var cartProvider = Provider.of<CartProvider>(
+                    //             context,
+                    //             listen: false);
+                    //         cartProvider.updateCart(
+                    //           int.parse(widget.groceryId),
+                    //           (val) {
+                    //             Provider.of<LoaderProvider>(context,
+                    //                     listen: false)
+                    //                 .setLoadingStatus(false);
+                    //             print(val);
+                    //           },
+                    //         );
+                    //       },
+                    //       padding: EdgeInsets.all(5),
+                    //       color: Colors.green,
+                    //       shape: StadiumBorder(),
+                    //     ),
+                    //   ),
+                    // ),
                   ],
                 ),
               ),
-              Expanded(
-                child: Container(
-                  color: Colors.white,
-                  width: MediaQuery.of(context).size.width,
-                  height: 100,
-                  child: Padding(
-                    padding: EdgeInsets.all(10),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
+              Container(
+                color: Colors.white,
+                width: MediaQuery.of(context).size.width,
+                height: 80,
+                child: Padding(
+                  padding: EdgeInsets.all(10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Total",
+                            style: TextStyle(
+                                fontSize: 15, fontWeight: FontWeight.w400),
+                          ),
+                          Text(
+                            "\$${cartModel.totalAmount}",
+                            style: TextStyle(
+                                fontSize: 25, fontWeight: FontWeight.bold),
+                          )
+                        ],
+                      ),
+                      FlatButton(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
                           children: [
                             Text(
-                              "Total",
-                              style: TextStyle(
-                                  fontSize: 15, fontWeight: FontWeight.w400),
+                              'Checkout',
+                              style: TextStyle(color: Colors.white),
                             ),
-                            Text(
-                              "\$${cartModel.totalAmount}",
-                              style: TextStyle(
-                                  fontSize: 25, fontWeight: FontWeight.bold),
-                            )
+                            Icon(Icons.chevron_right, color: Colors.white)
                           ],
                         ),
-                        FlatButton(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Checkout',
-                                style: TextStyle(color: Colors.white),
-                              ),
-                              Icon(Icons.chevron_right, color: Colors.white)
-                            ],
-                          ),
-                          onPressed: () {},
-                          padding: EdgeInsets.all(15),
-                          color: Colors.redAccent,
-                          shape: StadiumBorder(),
-                        )
-                      ],
-                    ),
+                        onPressed: () {},
+                        padding: EdgeInsets.all(15),
+                        color: Colors.redAccent,
+                        shape: StadiumBorder(),
+                      )
+                    ],
                   ),
                 ),
               ),

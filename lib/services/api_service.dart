@@ -440,6 +440,39 @@ class APIService {
     return responseModel;
   }
 
+  Future<CartResponseModel> updateToCartQty(
+      {int groceryId, int productId, int variationId, int qty}) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    CartResponseModel responseModel;
+    try {
+      print(Config.customerURL + Config.addtoCartURL);
+      Map<String, dynamic> data = {
+        'grocery_id': groceryId,
+        'product_id': productId,
+        'variation_id': variationId,
+        'quantity': qty,
+        'customer_id': prefs.getString('id')
+      };
+      var response = await Dio().post(
+        Config.customerURL + Config.addtoCartURL,
+        options: new Options(headers: {
+          'Accept': 'application/json',
+          'Authorization': prefs.getString('token'),
+        }),
+        data: data,
+      );
+      print("Res: ${response.data}");
+      if (response.statusCode == 200) {
+        responseModel = CartResponseModel.fromJson(response.data);
+      }
+    } on DioError catch (e) {
+      print(e.message);
+    }
+
+    print(responseModel.data);
+    return responseModel;
+  }
+
   Future<CartResponseModel> removetoCart({
     int groceryId,
     int productId,
@@ -455,6 +488,7 @@ class APIService {
         'variation_id': variationId,
         'customer_id': prefs.getString('id')
       };
+      print(Config.customerURL + Config.removeCartURL);
       print(data);
       var response = await Dio().post(
         Config.customerURL + Config.removeCartURL,
@@ -464,7 +498,7 @@ class APIService {
         }),
         data: data,
       );
-      print("Res: ${response.data}");
+      print("Remove: ${response.data}");
       if (response.statusCode == 200) {
         responseModel = CartResponseModel.fromJson(response.data);
       }

@@ -5,6 +5,7 @@ class Config {
   static String customerURL = "https://grocery.uthbay.com/api/customer/";
   static String productURL = "https://grocery.uthbay.com/api/products?";
   static String addtoCartURL = "addtocart";
+  static String updateCartURL = "updateCartItem";
   static String cartURL = "cart";
   static String removeCartURL = "removeCartItem";
   static String variableProductsURL =

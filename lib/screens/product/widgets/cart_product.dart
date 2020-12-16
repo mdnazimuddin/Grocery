@@ -101,14 +101,26 @@ class CartProduct extends StatelessWidget {
         width: 120,
         child: CustomStepper(
           iconSize: 22.0,
-          lowerLimit: 0,
-          upperLimit: 20,
+          lowerLimit: 1,
+          upperLimit: 1000,
           stepValue: 1,
           value: data.qty,
           onChange: (value) {
             Provider.of<CartProvider>(context, listen: false).updateQty(
                 data.productId, value,
                 variationId: data.variationId);
+            Provider.of<LoaderProvider>(context, listen: false)
+                .setLoadingStatus(true);
+            var cartProvider =
+                Provider.of<CartProvider>(context, listen: false);
+            cartProvider.updateCart(
+              int.parse(groceryId),
+              (val) {
+                Provider.of<LoaderProvider>(context, listen: false)
+                    .setLoadingStatus(false);
+                print(val);
+              },
+            );
           },
         ),
       ),
