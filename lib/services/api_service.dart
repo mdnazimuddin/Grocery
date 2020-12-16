@@ -1,3 +1,5 @@
+import 'package:Uthbay/models/cart_request_model.dart';
+import 'package:Uthbay/models/cart_response_model.dart';
 import 'package:Uthbay/models/customer.dart';
 import 'package:Uthbay/models/customer_address.dart';
 import 'package:Uthbay/models/grocery.dart';
@@ -5,6 +7,7 @@ import 'package:Uthbay/models/grocery_list.dart';
 import 'package:Uthbay/models/login_model.dart';
 import 'package:Uthbay/models/product.dart';
 import 'package:Uthbay/models/tag.dart';
+import 'package:Uthbay/models/variable_product.dart';
 import 'package:Uthbay/utilis/config.dart';
 import 'package:dio/dio.dart';
 import 'dart:convert';
@@ -101,6 +104,7 @@ class APIService {
         prefs.setString('name', null);
         prefs.setString('email', null);
         prefs.setString('img_src', null);
+        prefs.setStringList('address', null);
         prefs.setBool('login', false);
       }
     } on DioError catch (e) {
@@ -256,7 +260,7 @@ class APIService {
       var response = await Dio().get(url);
       // print(response.data);
       if (response.statusCode == 200) {
-        grocery = Grocery.fromJson(response.data);
+        grocery = Grocery.fromJson(response.data['data']);
       }
     } on DioError catch (e) {
       print(e.message);
@@ -373,6 +377,7 @@ class APIService {
       var productUrl = Config.productURL + parameter.toString();
       print(productUrl);
       var response = await Dio().get(productUrl);
+      // print(response.data['data']);
       if (response.statusCode == 200) {
         for (dynamic item in response.data['data']) {
           Product _product = Product.fromJson(item);
@@ -383,5 +388,122 @@ class APIService {
       print(e.message);
     }
     return products;
+  }
+
+  Future<List<VariableProduct>> getVariableProducts({dynamic productId}) async {
+    List<VariableProduct> responseModel = new List<VariableProduct>();
+
+    try {
+      String parameter =
+          Config.variableProductsURL + "/" + productId.toString();
+
+      var url = Config.productURL + parameter;
+      print(url);
+      var response = await Dio().get(parameter);
+      print(response.data['data']);
+      if (response.statusCode == 200) {
+        for (dynamic item in response.data['data']) {
+          VariableProduct _responseModel = VariableProduct.fromJson(item);
+          responseModel.add(_responseModel);
+        }
+      }
+    } on DioError catch (e) {
+      print(e.message);
+    }
+    return responseModel;
+  }
+
+  Future<CartResponseModel> addtoCart(CartRequestModel model) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    CartResponseModel responseModel;
+    try {
+      print(Config.customerURL + Config.addtoCartURL);
+      model.userId = int.parse(prefs.getString('id'));
+      print(model.toJson());
+      var response = await Dio().post(
+        Config.customerURL + Config.addtoCartURL,
+        options: new Options(headers: {
+          'Accept': 'application/json',
+          'Authorization': prefs.getString('token'),
+        }),
+        data: model.toJson(),
+      );
+      print("Res: ${response.data}");
+      if (response.statusCode == 200) {
+        responseModel = CartResponseModel.fromJson(response.data);
+      }
+    } on DioError catch (e) {
+      print(e.message);
+    }
+
+    print(responseModel.data);
+    return responseModel;
+  }
+
+  Future<CartResponseModel> removetoCart({
+    int groceryId,
+    int productId,
+    int variationId,
+  }) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    CartResponseModel responseModel;
+    try {
+      print(Config.customerURL + Config.addtoCartURL);
+      Map<String, dynamic> data = {
+        'grocery_id': groceryId,
+        'product_id': productId,
+        'variation_id': variationId,
+        'customer_id': prefs.getString('id')
+      };
+      print(data);
+      var response = await Dio().post(
+        Config.customerURL + Config.removeCartURL,
+        options: new Options(headers: {
+          'Accept': 'application/json',
+          'Authorization': prefs.getString('token'),
+        }),
+        data: data,
+      );
+      print("Res: ${response.data}");
+      if (response.statusCode == 200) {
+        responseModel = CartResponseModel.fromJson(response.data);
+      }
+    } on DioError catch (e) {
+      print(e.message);
+    }
+
+    print(responseModel.data);
+    return responseModel;
+  }
+
+  Future<CartResponseModel> getCartItems(int groceryId) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    CartResponseModel responseModel;
+    print(groceryId);
+    try {
+      var url = Config.customerURL + Config.cartURL;
+      Map<String, dynamic> data = {
+        'grocery_id': groceryId,
+        'customer_id': prefs.getString('id')
+      };
+      print(data);
+      print(Config.customerURL + Config.cartURL);
+      var response = await Dio().post(
+        Config.customerURL + Config.cartURL,
+        options: new Options(headers: {
+          'Accept': 'application/json',
+          'Authorization': prefs.getString('token'),
+        }),
+        data: data,
+      );
+      print(response);
+      if (response.statusCode == 200) {
+        responseModel = CartResponseModel.fromJson(response.data);
+      }
+    } on DioError catch (e) {
+      print(e.message);
+    }
+
+    return responseModel;
   }
 }

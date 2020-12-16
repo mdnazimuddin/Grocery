@@ -1,4 +1,6 @@
 import 'package:Uthbay/models/product.dart';
+import 'package:Uthbay/screens/product/details/product_details.dart';
+import 'package:Uthbay/screens/product/product_screen.dart';
 import 'package:Uthbay/services/api_service.dart';
 import 'package:flutter/material.dart';
 
@@ -42,7 +44,13 @@ class _WidgetShopProductsState extends State<WidgetShopProducts> {
                     'View All',
                     style: TextStyle(color: Colors.redAccent),
                   ),
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => ProductScreen(
+                                tagId: int.parse(this.widget.tagId))));
+                  },
                 ),
               ),
             ],
@@ -81,95 +89,105 @@ class _WidgetShopProductsState extends State<WidgetShopProducts> {
         itemCount: items.length,
         itemBuilder: (context, index) {
           var data = items[index];
-          return Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                margin: EdgeInsets.all(10),
-                width: 130,
-                height: 120,
-                alignment: Alignment.center,
-                child: Column(
-                  children: [
-                    Visibility(
-                      visible: data.calculateDiscount() > 0,
-                      child: Align(
-                        alignment: Alignment.topLeft,
-                        child: Container(
-                          padding: EdgeInsets.all(3),
-                          margin: EdgeInsets.only(top: 5, left: 5),
-                          decoration: BoxDecoration(
-                            color: Colors.green,
-                            borderRadius: BorderRadius.circular(50),
-                          ),
-                          child: Text(
-                            '${data.calculateDiscount()}% OFF',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
+          return GestureDetector(
+            onTap: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => ProductDetails(
+                            product: data,
+                          )));
+            },
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  margin: EdgeInsets.all(10),
+                  width: 130,
+                  height: 120,
+                  alignment: Alignment.center,
+                  child: Column(
+                    children: [
+                      Visibility(
+                        visible: data.calculateDiscount() > 0,
+                        child: Align(
+                          alignment: Alignment.topLeft,
+                          child: Container(
+                            padding: EdgeInsets.all(3),
+                            margin: EdgeInsets.only(top: 5, left: 5),
+                            decoration: BoxDecoration(
+                              color: Colors.green,
+                              borderRadius: BorderRadius.circular(50),
+                            ),
+                            child: Text(
+                              '${data.calculateDiscount()}% OFF',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                    Flexible(
-                      child: Image.network(
-                        data.images[0].src,
-                        height: 120,
+                      Flexible(
+                        child: Image.network(
+                          data.images[0].src,
+                          height: 120,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
+                  decoration: BoxDecoration(
+                      shape: BoxShape.rectangle,
+                      borderRadius: BorderRadius.circular(4),
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          offset: Offset(0, 5),
+                          blurRadius: 15,
+                        )
+                      ]),
                 ),
-                decoration: BoxDecoration(
-                    shape: BoxShape.rectangle,
-                    borderRadius: BorderRadius.circular(4),
-                    color: Colors.white,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black12,
-                        offset: Offset(0, 5),
-                        blurRadius: 15,
-                      )
-                    ]),
-              ),
-              Container(
-                width: 130,
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  data.name,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.black,
+                Container(
+                  width: 130,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    data.name,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.black,
+                    ),
                   ),
                 ),
-              ),
-              Container(
-                width: 130,
-                margin: EdgeInsets.only(top: 4, left: 4),
-                alignment: Alignment.centerLeft,
-                child: Row(
-                  children: [
-                    Text(
-                      '\$ ${data.regularPrice}',
-                      style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.redAccent,
-                          decoration: TextDecoration.lineThrough,
-                          fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      '\$ ${data.salePrice}',
-                      style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-              )
-            ],
+                Container(
+                  width: 130,
+                  margin: EdgeInsets.only(top: 4, left: 4),
+                  alignment: Alignment.centerLeft,
+                  child: Row(
+                    children: [
+                      Text(
+                        '\$ ${data.regularPrice}',
+                        style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.redAccent,
+                            decoration: TextDecoration.lineThrough,
+                            fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        '\$ ${data.salePrice}',
+                        style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                )
+              ],
+            ),
           );
         },
       ),

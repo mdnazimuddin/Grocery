@@ -1,6 +1,6 @@
 class Grocery {
-  int id;
-  int name;
+  String id;
+  String name;
   String slug;
   String logo;
   String cover_img;

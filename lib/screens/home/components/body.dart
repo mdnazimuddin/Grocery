@@ -261,18 +261,12 @@ class _BodyState extends State<Body> {
                   ));
                 else {
                   print(snapshot.data);
+                  List<GroceryList> groceries = snapshot.data;
                   return ListView.builder(
                       itemCount: groceriesList.length ?? 0,
                       itemBuilder: (context, index) {
-                        return customCard(
-                          groceriesList[index].name,
-                          groceriesList[index].logo,
-                          groceriesList[index].cover_img,
-                          groceriesList[index].opening_status,
-                          groceriesList[index].address,
-                          groceriesList[index].rating,
-                          groceriesList[index].href,
-                        );
+                        GroceryList grocery = groceries[index];
+                        return customCard(grocery);
                       });
                 }
               }),
@@ -281,8 +275,7 @@ class _BodyState extends State<Body> {
     );
   }
 
-  Widget customCard(String name, String logo, String image, bool isOpen,
-      GroceryAddress address, String rating, Href href) {
+  Widget customCard(GroceryList grocery) {
     return Padding(
       padding: EdgeInsets.symmetric(
         vertical: 15,
@@ -290,8 +283,12 @@ class _BodyState extends State<Body> {
       ),
       child: InkWell(
         onTap: () async {
-          Navigator.push(context,
-              MaterialPageRoute(builder: (context) => ShopScreen(href.link)));
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => ShopScreen(
+                        grocery: grocery,
+                      )));
         },
         child: Material(
           color: Colors.white,
@@ -309,7 +306,8 @@ class _BodyState extends State<Body> {
                       height: 180.0,
                       decoration: BoxDecoration(
                         image: DecorationImage(
-                            fit: BoxFit.cover, image: NetworkImage(image)),
+                            fit: BoxFit.cover,
+                            image: NetworkImage(grocery.cover_img)),
                         borderRadius: BorderRadius.only(
                             topLeft: Radius.circular(8.0),
                             topRight: Radius.circular(8.0)),
@@ -326,7 +324,7 @@ class _BodyState extends State<Body> {
                             child: Row(
                               children: [
                                 Text(
-                                  rating,
+                                  grocery.rating,
                                   style: TextStyle(
                                       color: Colors.white, fontSize: 16),
                                 ),
@@ -347,9 +345,10 @@ class _BodyState extends State<Body> {
                   // padding: EdgeInsets.only(left: 20, bottom: 10),
                   child: ListTile(
                     leading: CircleAvatar(
-                        backgroundImage: NetworkImage(logo), radius: 25.0),
+                        backgroundImage: NetworkImage(grocery.logo),
+                        radius: 25.0),
                     title: Text(
-                      name,
+                      grocery.name,
                       maxLines: 2,
                       style: TextStyle(
                         color: Colors.black87,
@@ -358,16 +357,17 @@ class _BodyState extends State<Body> {
                       ),
                     ),
                     subtitle: Text(
-                      "${address.address_1}, ${address.city}, ${address.state}",
+                      "${grocery.address.address_1}, ${grocery.address.city}, ${grocery.address.state}",
                       style: TextStyle(
                         color: Colors.black54,
                         fontSize: 14,
                       ),
                     ),
                     trailing: Text(
-                      isOpen ? 'Open' : 'Close',
+                      grocery.opening_status ? 'Open' : 'Close',
                       style: TextStyle(
-                        color: isOpen ? Colors.green : Colors.red,
+                        color:
+                            grocery.opening_status ? Colors.green : Colors.red,
                         fontWeight: FontWeight.bold,
                         fontSize: 14,
                       ),

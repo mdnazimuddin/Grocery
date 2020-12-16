@@ -1,4 +1,5 @@
 import 'package:Uthbay/models/grocery.dart';
+import 'package:Uthbay/models/grocery_list.dart';
 import 'package:Uthbay/models/tag.dart';
 import 'package:Uthbay/screens/shop/widgets/shop_categories.dart';
 import 'package:Uthbay/screens/shop/widgets/shop_product.dart';
@@ -9,36 +10,21 @@ import 'package:flutter_carousel_slider/carousel_slider_transforms.dart';
 import 'package:flutter/material.dart';
 
 class DashboardScreen extends StatefulWidget {
-  final String url;
-  DashboardScreen(this.url);
+  final GroceryList grocery;
+  DashboardScreen({@required this.grocery});
   @override
-  _DashboardScreenState createState() => _DashboardScreenState(this.url);
+  _DashboardScreenState createState() => _DashboardScreenState();
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  final String url;
-  _DashboardScreenState(this.url);
+  _DashboardScreenState();
   APIService apiService;
-  Grocery grocery;
-  getGrocery() async {
-    apiService.getGrocery(url).then((data) => {
-          setState(() {
-            grocery = data;
-            print(grocery);
-          })
-        });
-  }
-
-  _onLayoutDone(_) {
-    getGrocery();
-  }
 
   @override
   void initState() {
-    WidgetsBinding.instance.addPostFrameCallback(_onLayoutDone);
+    // WidgetsBinding.instance.addPostFrameCallback(_onLayoutDone);
     super.initState();
     apiService = new APIService();
-    print(url);
   }
 
   @override
@@ -49,7 +35,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         child: ListView(
           children: [
             imageCarousel(context),
-            WidgetCategory(this.url),
+            WidgetCategory(widget.grocery.href.link),
             _tagList(context)
           ],
         ),
@@ -62,7 +48,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       width: MediaQuery.of(context).size.width,
       height: 220.0,
       child: FutureBuilder<Object>(
-          future: apiService.getGroceryImages(url),
+          future: apiService.getGroceryImages(widget.grocery.href.link),
           builder: (context, snapshot) {
             if (!snapshot.hasData)
               return Center(
@@ -95,7 +81,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _tagList(BuildContext context) {
     return FutureBuilder(
-      future: apiService.getTags(this.url),
+      future: apiService.getTags(this.widget.grocery.href.link),
       builder: (BuildContext context, snapshot) {
         if (!snapshot.hasData)
           return Center(

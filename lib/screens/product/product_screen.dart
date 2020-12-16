@@ -9,7 +9,9 @@ import 'package:provider/provider.dart';
 
 class ProductScreen extends BaseScreen {
   int categoryId;
-  ProductScreen({this.categoryId});
+  int tagId;
+  String title;
+  ProductScreen({this.categoryId, this.tagId, title});
   @override
   _ProductScreenState createState() => _ProductScreenState();
 }
@@ -17,7 +19,6 @@ class ProductScreen extends BaseScreen {
 class _ProductScreenState extends BaseScreenState<ProductScreen> {
   int _page = 1;
   ScrollController _scrollController = new ScrollController();
-
   final _searchQuery = new TextEditingController();
   Timer _debounce;
   final _sortByOptions = {
@@ -27,19 +28,23 @@ class _ProductScreenState extends BaseScreenState<ProductScreen> {
     SortBy("price", "Price: Low to High", "asc"),
   };
   initState() {
+    print(widget.tagId);
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       var productList = Provider.of<ProductProvider>(context, listen: false);
       productList.resetStreams();
       productList.setLoadingState(LoadMoreStatus.INITIAL);
       productList.fetchProducts(_page,
-          categoryId: widget.categoryId.toString());
+          categoryId: widget.categoryId.toString(),
+          tagId: widget.tagId.toString());
       _scrollController.addListener(() {
         if (_scrollController.position.pixels ==
             _scrollController.position.maxScrollExtent) {
           productList.setLoadingState(LoadMoreStatus.LOADING);
+
           productList.fetchProducts(++_page,
-              categoryId: widget.categoryId.toString());
+              categoryId: widget.categoryId.toString(),
+              tagId: widget.tagId.toString());
         }
       });
     });
@@ -61,7 +66,9 @@ class _ProductScreenState extends BaseScreenState<ProductScreen> {
     productList.resetStreams();
     productList.setLoadingState(LoadMoreStatus.INITIAL);
     productList.fetchProducts(_page,
-        strSerach: _searchQuery.text, categoryId: widget.categoryId.toString());
+        strSerach: _searchQuery.text,
+        categoryId: widget.categoryId.toString(),
+        tagId: widget.tagId.toString());
   }
 
   @override
@@ -156,7 +163,8 @@ class _ProductScreenState extends BaseScreenState<ProductScreen> {
                 productList.resetStreams();
                 productList.setSortOrder(sortBy);
                 productList.fetchProducts(_page,
-                    categoryId: widget.categoryId.toString());
+                    categoryId: widget.categoryId.toString(),
+                    tagId: widget.tagId.toString());
               },
               itemBuilder: (BuildContext context) {
                 return _sortByOptions.map((item) {

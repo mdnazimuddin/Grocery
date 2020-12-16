@@ -1,3 +1,5 @@
+import 'package:Uthbay/models/variable_product.dart';
+
 class Product {
   dynamic id;
   dynamic groceryID;
@@ -13,6 +15,8 @@ class Product {
   List<ProductCategory> categories;
   List<Attributes> attributes;
   List<int> relatedIds;
+  String type;
+  VariableProduct variableProduct;
   Product({
     this.id,
     this.groceryID,
@@ -28,19 +32,32 @@ class Product {
     this.categories,
     this.attributes,
     this.relatedIds,
+    this.type,
+    this.variableProduct,
   });
   Product.fromJson(Map<String, dynamic> json) {
+    print("Json:" + json['type'].toString());
     id = json['id'].toString();
     groceryID = json['grocery_id'].toString();
     name = json['name'];
     sku = json['sku'];
+    price = json['price'];
     regularPrice = json['regular_price'];
-    relatedIds = json['cross_sell_ids'].cast<int>();
     salePrice =
         json['sale_price'] != "" ? json['sale_price'] : json['regular_price'];
     stockStatus = json['stock_status'];
     description = json['description'];
     sortDescription = json['sort_description'];
+    type = json['type'].toString();
+    relatedIds = json['cross_sell_ids'].cast<int>() ?? null;
+    if (json['attributes'] != null) {
+      attributes = new List<Attributes>();
+      for (dynamic item in json['attributes']) {
+        Attributes _attributes = Attributes.fromJson(item);
+
+        attributes.add(_attributes);
+      }
+    }
 
     if (json['categories'] != null) {
       categories = new List<ProductCategory>();
@@ -54,19 +71,16 @@ class Product {
         images.add(new ProductImage.fromJson(v));
       });
     }
-    if (json['attributes'] != null) {
-      attributes = new List<Attributes>();
-      json['images'].forEach((v) {
-        attributes.add(new Attributes.fromJson(v));
-      });
-    }
   }
   calculateDiscount() {
-    dynamic regularPrice = double.parse(this.regularPrice);
-    dynamic salePrice =
-        this.salePrice != "" ? double.parse(this.salePrice) : regularPrice;
-    dynamic discount = regularPrice - salePrice;
-    dynamic disPercent = (discount / regularPrice) * 100;
+    dynamic disPercent = 0;
+    if (this.regularPrice != "") {
+      dynamic regularPrice = double.parse(this.regularPrice);
+      dynamic salePrice =
+          this.salePrice != "" ? double.parse(this.salePrice) : regularPrice;
+      dynamic discount = regularPrice - salePrice;
+      disPercent = (discount / regularPrice) * 100;
+    }
 
     return disPercent.round();
   }
@@ -106,14 +120,12 @@ class ProductCategory {
 }
 
 class Attributes {
-  dynamic id;
   dynamic name;
-  List<dynamic> options;
+  dynamic option;
 
-  Attributes({this.id, this.name, this.options});
+  Attributes({this.name, this.option});
   Attributes.fromJson(Map<String, dynamic> json) {
-    id = json['id'].toString();
-    name = json['name'];
-    options = json['options'].cast<String>();
+    name = json['name'].toString();
+    option = json['option'].toString();
   }
 }

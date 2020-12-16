@@ -1,18 +1,24 @@
+import 'dart:ui';
+
+import 'package:Uthbay/models/grocery_list.dart';
+import 'package:Uthbay/provider/cart_provider.dart';
+import 'package:Uthbay/provider/cart_provider.dart';
+import 'package:Uthbay/screens/product/cart/cart_page.dart';
 import 'package:Uthbay/utilis/cart_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'components/dashboard_screen.dart';
 
 class ShopScreen extends StatefulWidget {
-  final String url;
-  ShopScreen(this.url);
+  final GroceryList grocery;
+  ShopScreen({@required this.grocery});
   @override
-  _ShopScreenState createState() => _ShopScreenState(this.url);
+  _ShopScreenState createState() => _ShopScreenState();
 }
 
 class _ShopScreenState extends State<ShopScreen> {
-  String url;
-  _ShopScreenState(this.url);
+  _ShopScreenState();
   int _index = 0;
   // List<Widget> _widgetList = [
   //   DashboardScreen(url),
@@ -24,7 +30,6 @@ class _ShopScreenState extends State<ShopScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    this.url = widget.url;
   }
 
   @override
@@ -51,12 +56,18 @@ class _ShopScreenState extends State<ShopScreen> {
         },
       ),
       body: _index == 0
-          ? DashboardScreen(url)
+          ? DashboardScreen(
+              grocery: widget.grocery,
+            )
           : (_index == 1
-              ? DashboardScreen(url)
+              ? DashboardScreen(grocery: widget.grocery)
               : (_index == 2
-                  ? DashboardScreen(url)
-                  : (_index == 3 ? DashboardScreen(url) : Container()))),
+                  ? CartPage(
+                      groceryId: this.widget.grocery.id,
+                    )
+                  : (_index == 3
+                      ? DashboardScreen(grocery: widget.grocery)
+                      : Container()))),
     );
   }
 
@@ -67,7 +78,10 @@ class _ShopScreenState extends State<ShopScreen> {
       brightness: Brightness.dark,
       elevation: 0,
       automaticallyImplyLeading: true,
-      title: applogo(),
+      title: Text(
+        this.widget.grocery.name.toString(),
+        style: TextStyle(color: Colors.white),
+      ),
       leading: IconButton(
           icon: Icon(
             Icons.arrow_back_ios,
@@ -77,7 +91,52 @@ class _ShopScreenState extends State<ShopScreen> {
       actions: [
         Icon(Icons.notifications_none, color: Colors.white),
         SizedBox(width: 10),
-        Icon(Icons.shopping_cart, color: Colors.white),
+        Stack(
+          children: [
+            IconButton(
+              icon: Icon(Icons.shopping_cart),
+              color: Colors.white,
+              onPressed: () {
+                CartPage(groceryId: this.widget.grocery.id);
+              },
+            ),
+            Provider.of<CartProvider>(context, listen: false)
+                        .cartItems
+                        .length ==
+                    0
+                ? new Container()
+                : new Positioned(
+                    top: 4.0,
+                    right: 4.0,
+                    child: new Stack(
+                      children: [
+                        Icon(
+                          Icons.brightness_1,
+                          size: 20.0,
+                          color: Colors.green[800],
+                        ),
+                        new Positioned(
+                          top: 4.0,
+                          right: 5.0,
+                          child: Center(
+                            child: Text(
+                              Provider.of<CartProvider>(context, listen: false)
+                                  .cartItems
+                                  .length
+                                  .toString(),
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 11.0,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
+                  )
+          ],
+        ),
         SizedBox(width: 10),
       ],
     );
