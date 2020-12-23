@@ -1,5 +1,6 @@
 import 'package:Uthbay/models/customer.dart';
 import 'package:Uthbay/screens/home/home_screen.dart';
+import 'package:Uthbay/screens/signin/signin_screen.dart';
 import 'package:Uthbay/services/api_service.dart';
 import 'package:Uthbay/utilis/ProgressHUD.dart';
 import 'package:Uthbay/utilis/form_helper.dart';
@@ -55,17 +56,17 @@ class _BodyState extends State<Body> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 FormHelper.fieldLabel("Full Name"),
-                FormHelper.textInput(
-                  context,
-                  model.name,
-                  (value) => {this.model.name = value},
-                  onValidate: (value) {
-                    if (value.toString().isEmpty) {
-                      return 'Plesae enter your Full Name';
-                    }
-                    return null;
-                  },
-                ),
+                // FormHelper.textInput(
+                //   context,
+                //   // model.name,
+                //   (value) => {this.model.name = value},
+                //   onValidate: (value) {
+                //     if (value.toString().isEmpty) {
+                //       return 'Plesae enter your Full Name';
+                //     }
+                //     return null;
+                //   },
+                // ),
                 FormHelper.fieldLabel("Email Id"),
                 FormHelper.textInput(
                   context,
@@ -161,6 +162,20 @@ class _BodyState extends State<Body> {
                       });
                     }
                   }),
+                ),
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: InkWell(
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => SignInScreen()));
+                      },
+                      child: Text("You have Already Register.Please Login."),
+                    ),
+                  ),
                 )
               ],
             ),

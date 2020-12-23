@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
 class FormHelper {
@@ -5,21 +7,24 @@ class FormHelper {
     BuildContext context,
     Object initialValue,
     Function onChanged, {
+    String hintText = "",
     bool isTextArea = false,
     bool isNumberInput = false,
     obscureText: false,
     Function onValidate,
     Widget prefixIcon,
     Widget suffixIcon,
+    bool readOnly = false,
   }) {
     return TextFormField(
       initialValue: initialValue != null ? initialValue.toString() : "",
       decoration: fieldDecoration(
         context,
-        "",
+        hintText,
         "",
         suffixIcon: suffixIcon,
       ),
+      readOnly: readOnly,
       obscureText: obscureText,
       maxLines: !isTextArea ? 1 : 3,
       keyboardType: isNumberInput ? TextInputType.number : TextInputType.text,
@@ -29,6 +34,7 @@ class FormHelper {
       validator: (value) {
         return onValidate(value);
       },
+      style: TextStyle(fontWeight: FontWeight.normal, fontSize: 14),
     );
   }
 
@@ -40,20 +46,26 @@ class FormHelper {
     Widget suffixIcon,
   }) {
     return InputDecoration(
-      contentPadding: EdgeInsets.all(6),
+      contentPadding: EdgeInsets.all(8),
       hintText: hintText,
       helperText: helperText,
       prefixIcon: prefixIcon,
       suffixIcon: suffixIcon,
       enabledBorder: OutlineInputBorder(
         borderSide: BorderSide(
-          color: Theme.of(context).primaryColor,
+          color: Colors.grey,
+          width: 1,
+        ),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderSide: BorderSide(
+          color: Colors.grey,
           width: 1,
         ),
       ),
       border: OutlineInputBorder(
         borderSide: BorderSide(
-          color: Theme.of(context).primaryColor,
+          color: Colors.grey,
           width: 1,
         ),
       ),
@@ -66,18 +78,30 @@ class FormHelper {
       child: Text(
         labelName,
         style: new TextStyle(
-          fontWeight: FontWeight.bold,
+          fontWeight: FontWeight.w500,
           fontSize: 15.0,
         ),
       ),
     );
   }
 
+  static Widget fieldLabelValue(BuildContext context, String labelName) {
+    return FormHelper.textInput(
+      context,
+      labelName,
+      (value) => {},
+      onValidate: (value) {
+        return null;
+      },
+      readOnly: true,
+    );
+  }
+
   static Widget saveButton(String buttonText, Function onTap,
-      {String color, String textColor, bool fullWidth}) {
+      {String color, String textColor, bool fullWidth = false}) {
     return Container(
       height: 50.0,
-      width: 150,
+      width: fullWidth == true ? double.infinity : 150.0,
       child: GestureDetector(
         onTap: () {
           onTap();

@@ -9,7 +9,7 @@ class CartRequestModel {
 
   CartRequestModel.fromJson(Map<String, dynamic> json) {
     userId = json['customer_id'];
-    userId = json['grocery_id'];
+    groceryId = json['grocery_id'];
     if (json['products'] != null) {
       products = new List<CartProducts>();
       json['products'].forEach((v) {

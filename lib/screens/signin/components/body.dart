@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:Uthbay/models/customer.dart';
 import 'package:Uthbay/screens/home/home_screen.dart';
+import 'package:Uthbay/screens/signup/signup_screen.dart';
 import 'package:Uthbay/services/api_service.dart';
 import 'package:Uthbay/utilis/ProgressHUD.dart';
 import 'package:Uthbay/utilis/form_helper.dart';
@@ -42,12 +43,16 @@ class _BodyState extends State<Body> {
       body: SingleChildScrollView(
         child: Column(
           children: [
+            SizedBox(height: 20),
+            Container(
+              child: Image.asset('assets/logo/uthbay-white.png'),
+            ),
             Stack(
               children: [
                 Container(
                   width: double.infinity,
                   padding: EdgeInsets.symmetric(vertical: 30, horizontal: 20),
-                  margin: EdgeInsets.symmetric(vertical: 85, horizontal: 20),
+                  margin: EdgeInsets.symmetric(vertical: 0, horizontal: 20),
                   decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(20),
                       color: Theme.of(context).primaryColor,
@@ -74,6 +79,8 @@ class _BodyState extends State<Body> {
                               : null,
                           decoration: InputDecoration(
                             hintText: "Email Address",
+                            hintStyle: TextStyle(
+                                fontWeight: FontWeight.normal, fontSize: 14),
                             enabledBorder: UnderlineInputBorder(
                               borderSide: BorderSide(
                                 color: Theme.of(context)
@@ -102,6 +109,8 @@ class _BodyState extends State<Body> {
                           obscureText: hidePassword,
                           decoration: InputDecoration(
                             hintText: "Password",
+                            hintStyle: TextStyle(
+                                fontWeight: FontWeight.normal, fontSize: 14),
                             enabledBorder: UnderlineInputBorder(
                               borderSide: BorderSide(
                                 color: Theme.of(context)
@@ -137,9 +146,9 @@ class _BodyState extends State<Body> {
                               vertical: 12, horizontal: 80),
                           onPressed: () {
                             if (validetAndSave()) {
-                              setState(() {
-                                isApiCallProcess = true;
-                              });
+                              // setState(() {
+                              //   isApiCallProcess = true;
+                              // });
                               apiService
                                   .loginCustomer(email, password)
                                   .then((ret) {
@@ -151,6 +160,7 @@ class _BodyState extends State<Body> {
                                       "Login Successfull",
                                       "OK",
                                       () {
+                                        isApiCallProcess = false;
                                         // Navigator.of(context).pop();
                                         Navigator.pushReplacement(
                                             context,
@@ -168,6 +178,7 @@ class _BodyState extends State<Body> {
                                       "Login Faild! Please try again.",
                                       "OK",
                                       () {
+                                        isApiCallProcess = false;
                                         Navigator.of(context).pop();
                                       },
                                     );
@@ -182,6 +193,29 @@ class _BodyState extends State<Body> {
                           ),
                           color: Theme.of(context).accentColor,
                           shape: StadiumBorder(),
+                        ),
+                        Divider(
+                          color: Colors.grey,
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text("Dont't have an account? "),
+                            InkWell(
+                              onTap: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => SignUpScreen()));
+                              },
+                              child: Text("Register",
+                                  style: TextStyle(
+                                    color: Theme.of(context).accentColor,
+                                    fontWeight: FontWeight.w500,
+                                  )),
+                            )
+                          ],
                         )
                       ],
                     ),

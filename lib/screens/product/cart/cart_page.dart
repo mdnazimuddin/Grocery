@@ -1,12 +1,8 @@
-import 'dart:ui';
-
-import 'package:Uthbay/models/cart_request_model.dart';
-import 'package:Uthbay/models/cart_response_model.dart';
 import 'package:Uthbay/provider/cart_provider.dart';
 import 'package:Uthbay/provider/loader_provider.dart';
+import 'package:Uthbay/screens/checkout/components/pickpu.dart';
 import 'package:Uthbay/screens/product/widgets/cart_product.dart';
 import 'package:Uthbay/utilis/ProgressHUD.dart';
-import 'package:Uthbay/utilis/cart_icons.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -151,7 +147,13 @@ class _CartPageState extends State<CartPage> {
                             Icon(Icons.chevron_right, color: Colors.white)
                           ],
                         ),
-                        onPressed: () {},
+                        onPressed: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      PickupPage(groceryId: widget.groceryId)));
+                        },
                         padding: EdgeInsets.all(15),
                         color: Colors.redAccent,
                         shape: StadiumBorder(),
@@ -163,7 +165,7 @@ class _CartPageState extends State<CartPage> {
             ],
           );
         } else {
-          return Container();
+          return Center(child: CircularProgressIndicator());
         }
       },
     );

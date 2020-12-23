@@ -1,6 +1,7 @@
 import 'package:Uthbay/screens/home/home_screen.dart';
 import 'package:Uthbay/screens/signin/signin_screen.dart';
 import 'package:Uthbay/screens/signup/signup_screen.dart';
+import 'package:Uthbay/screens/splash/components/intro.dart';
 import 'package:animated_splash_screen/animated_splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:page_transition/page_transition.dart';
@@ -35,16 +36,17 @@ class _BodyState extends State<Body> {
     return AnimatedSplashScreen.withScreenFunction(
         duration: 3000,
         splash: SizedBox(
-            width: MediaQuery.of(context).size.width * .5,
-            child: Image.asset(
-              "assets/logo/uthbay.png",
-              fit: BoxFit.cover,
-            )),
+          width: MediaQuery.of(context).size.width * .5,
+          child: Image.asset(
+            "assets/logo/uthbay.png",
+            fit: BoxFit.cover,
+          ),
+        ),
         screenFunction: () async {
           if (login) {
             return HomeScreen();
           } else {
-            return SignUpScreen();
+            return IntroScreen();
           }
         },
         splashTransition: SplashTransition.scaleTransition,

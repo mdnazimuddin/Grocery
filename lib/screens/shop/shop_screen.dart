@@ -3,6 +3,9 @@ import 'dart:ui';
 import 'package:Uthbay/models/grocery_list.dart';
 import 'package:Uthbay/provider/cart_provider.dart';
 import 'package:Uthbay/provider/cart_provider.dart';
+import 'package:Uthbay/screens/order/components/order_details.dart';
+import 'package:Uthbay/screens/order/orders_page.dart';
+import 'package:Uthbay/screens/payment/payment_screen.dart';
 import 'package:Uthbay/screens/product/cart/cart_page.dart';
 import 'package:Uthbay/utilis/cart_icons.dart';
 import 'package:flutter/material.dart';
@@ -60,13 +63,13 @@ class _ShopScreenState extends State<ShopScreen> {
               grocery: widget.grocery,
             )
           : (_index == 1
-              ? DashboardScreen(grocery: widget.grocery)
+              ? OrderDetailsPage()
               : (_index == 2
                   ? CartPage(
                       groceryId: this.widget.grocery.id,
                     )
                   : (_index == 3
-                      ? DashboardScreen(grocery: widget.grocery)
+                      ? PaymentScreen(groceryId: this.widget.grocery.id)
                       : Container()))),
     );
   }

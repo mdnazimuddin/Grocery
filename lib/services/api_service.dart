@@ -2,9 +2,12 @@ import 'package:Uthbay/models/cart_request_model.dart';
 import 'package:Uthbay/models/cart_response_model.dart';
 import 'package:Uthbay/models/customer.dart';
 import 'package:Uthbay/models/customer_address.dart';
+import 'package:Uthbay/models/customer_details.dart';
+import 'package:Uthbay/models/customer_details_model.dart';
 import 'package:Uthbay/models/grocery.dart';
 import 'package:Uthbay/models/grocery_list.dart';
 import 'package:Uthbay/models/login_model.dart';
+import 'package:Uthbay/models/order.dart';
 import 'package:Uthbay/models/product.dart';
 import 'package:Uthbay/models/tag.dart';
 import 'package:Uthbay/models/variable_product.dart';
@@ -25,14 +28,16 @@ class APIService {
       );
       if (response.statusCode == 200) {
         ret = true;
-        var token = "Bearer " + response.data['success']['token'].toString();
+        var token = "Bearer " + response.data['data']['token'].toString();
         print(token);
         prefs.setString('token', token);
-        prefs.setString('id', response.data['success']['id'].toString());
-        prefs.setString('name', response.data['success']['name'].toString());
-        prefs.setString('email', response.data['success']['email'].toString());
+        prefs.setString('id', response.data['data']['id'].toString());
         prefs.setString(
-            'img_src', response.data['success']['img_src'].toString());
+            'first_name', response.data['data']['first_name'].toString());
+        prefs.setString(
+            'last_name', response.data['data']['last_name'].toString());
+        prefs.setString('email', response.data['data']['email'].toString());
+        prefs.setString('img_src', response.data['data']['img_src'].toString());
         prefs.setBool('login', true);
       }
     } on DioError catch (e) {
@@ -63,14 +68,16 @@ class APIService {
       );
       if (response.statusCode == 200) {
         ret = true;
-        var token = "Bearer " + response.data['success']['token'].toString();
+        var token = "Bearer " + response.data['data']['token'].toString();
         print(token);
         prefs.setString('token', token);
-        prefs.setString('id', response.data['success']['id'].toString());
-        prefs.setString('name', response.data['success']['name'].toString());
-        prefs.setString('email', response.data['success']['email'].toString());
+        prefs.setString('id', response.data['data']['id'].toString());
         prefs.setString(
-            'img_src', response.data['success']['img_src'].toString());
+            'first_name', response.data['data']['first_name'].toString());
+        prefs.setString(
+            'last_name', response.data['data']['last_name'].toString());
+        prefs.setString('email', response.data['data']['email'].toString());
+        prefs.setString('img_src', response.data['data']['img_src'].toString());
         prefs.setBool('login', true);
       }
     } on DioError catch (e) {
@@ -101,7 +108,8 @@ class APIService {
         ret = true;
         prefs.setString('token', null);
         prefs.setString('id', null);
-        prefs.setString('name', null);
+        // prefs.setString('first_name', null);
+        // prefs.setString('last_name', null);
         prefs.setString('email', null);
         prefs.setString('img_src', null);
         prefs.setStringList('address', null);
@@ -135,14 +143,14 @@ class APIService {
 
       if (response.statusCode == 200) {
         List<String> addressList = [
-          response.data['success']['address_1'],
-          response.data['success']['address_2'],
-          response.data['success']['city'],
-          response.data['success']['state'],
-          response.data['success']['zip'],
-          response.data['success']['country'],
-          response.data['success']['latitude'],
-          response.data['success']['longitude']
+          response.data['data']['address_1'],
+          response.data['data']['address_2'],
+          response.data['data']['city'],
+          response.data['data']['state'],
+          response.data['data']['zip'],
+          response.data['data']['country'],
+          response.data['data']['latitude'],
+          response.data['data']['longitude']
         ];
         print(addressList);
         prefs.setStringList('address', addressList);
@@ -170,14 +178,14 @@ class APIService {
       );
       if (response.statusCode == 200) {
         List<String> address = [
-          response.data['success']['address_1'],
-          response.data['success']['address_2'],
-          response.data['success']['city'],
-          response.data['success']['state'],
-          response.data['success']['zip'],
-          response.data['success']['country'],
-          response.data['success']['latitude'],
-          response.data['success']['longitude']
+          response.data['data']['address_1'],
+          response.data['data']['address_2'],
+          response.data['data']['city'],
+          response.data['data']['state'],
+          response.data['data']['zip'],
+          response.data['data']['country'],
+          response.data['data']['latitude'],
+          response.data['data']['longitude']
         ];
         print(address);
 
@@ -196,7 +204,6 @@ class APIService {
   Future<CustomerAddress> getAddress() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     CustomerAddress customerAddress = new CustomerAddress();
-    bool ret = false;
     try {
       var response = await Dio().post(
         Config.customerURL + 'address',
@@ -207,14 +214,14 @@ class APIService {
       );
       if (response.statusCode == 200) {
         List<String> address = [
-          response.data['success']['address_1'],
-          response.data['success']['address_2'],
-          response.data['success']['city'],
-          response.data['success']['state'],
-          response.data['success']['zip'],
-          response.data['success']['country'],
-          response.data['success']['latitude'],
-          response.data['success']['longitude']
+          response.data['data']['address_1'],
+          response.data['data']['address_2'],
+          response.data['data']['city'],
+          response.data['data']['state'],
+          response.data['data']['zip'],
+          response.data['data']['country'],
+          response.data['data']['latitude'],
+          response.data['data']['longitude']
         ];
         print(address);
 
@@ -242,7 +249,7 @@ class APIService {
         }),
       );
       if (response.statusCode == 200) {
-        for (var item in response.data['success']) {
+        for (var item in response.data['data']) {
           GroceryList groceries = GroceryList.fromJson(item);
           groceriesList.add(groceries);
         }
@@ -539,5 +546,89 @@ class APIService {
     }
 
     return responseModel;
+  }
+
+  Future<CustomerDetails> customerDetails() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    CustomerDetails responseModel;
+    try {
+      var url = Config.customerURL + Config.detailsURL;
+
+      print(url);
+      var response = await Dio().post(
+        url,
+        options: new Options(headers: {
+          'Accept': 'application/json',
+          'Authorization': prefs.getString('token'),
+        }),
+      );
+      print(response.data['data']);
+      if (response.statusCode == 200) {
+        responseModel = CustomerDetails.fromJson(response.data['data']);
+      }
+    } on DioError catch (e) {
+      print(e.message);
+    }
+    print(responseModel.shipping.address1);
+
+    return responseModel;
+  }
+
+  Future<bool> createOrder(Order model) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool isOrderCreated = false;
+    print(model.toJson());
+    // try {
+    //   var url = Config.customerURL + Config.cartURL;
+    //   Map<String, dynamic> data = {
+    //     'grocery_id': 2,
+    //     'customer_id': prefs.getString('id')
+    //   };
+    //   print(data);
+    //   print(Config.customerURL + Config.orderURL);
+    //   var response = await Dio().post(
+    //     Config.customerURL + Config.cartURL,
+    //     options: new Options(headers: {
+    //       'Accept': 'application/json',
+    //       'Authorization': prefs.getString('token'),
+    //     }),
+    //     data: model.toJson(),
+    //   );
+    //   print(response);
+    //   if (response.statusCode == 200) {
+    //     isOrderCreated = true;
+    //   }
+    // } on DioError catch (e) {
+    //   print(e.message);
+    //   isOrderCreated = false;
+    // }
+
+    return isOrderCreated;
+  }
+
+  Future<List<Order>> getOrders() async {
+    List<Order> data = new List<Order>();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    try {
+      var url = Config.customerURL + Config.cartURL;
+
+      print(Config.customerURL + Config.orderURL);
+      var response = await Dio().post(
+        url,
+        options: new Options(headers: {
+          'Accept': 'application/json',
+          'Authorization': prefs.getString('token'),
+        }),
+      );
+      print(response);
+      if (response.statusCode == 200) {
+        data = (response.data as List).map((i) => Order.fromJson(i)).toList();
+      }
+    } on DioError catch (e) {
+      print(e.message);
+    }
+
+    return data;
   }
 }
