@@ -69,9 +69,9 @@ class CartProduct extends StatelessWidget {
               onPressed: () {
                 AlertMessage.showMessage(
                   context,
-                  "Uthbay Go",
-                  "Do you want to delete this item?",
-                  "Yes",
+                  "Uthbay Grocery",
+                  "Delete item?",
+                  "Delete",
                   () {
                     Provider.of<LoaderProvider>(context, listen: false)
                         .setLoadingStatus(true);
@@ -83,7 +83,7 @@ class CartProduct extends StatelessWidget {
                         .setLoadingStatus(false);
                     Navigator.of(context).pop();
                   },
-                  buttonText2: "No",
+                  buttonText2: "Cancel",
                   isConfirmationDialog: true,
                   onPressed2: () {
                     Navigator.of(context).pop();

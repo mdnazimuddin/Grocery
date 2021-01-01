@@ -9,6 +9,7 @@ import 'package:Uthbay/screens/payment/payment_screen.dart';
 import 'package:Uthbay/services/api_service.dart';
 import 'package:Uthbay/utilis/form_helper.dart';
 import 'package:flutter/material.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
 
 class VerifyAddress extends CheckoutBasePage {
@@ -160,8 +161,11 @@ class _VerifyAddressState extends CheckoutBasePageState<VerifyAddress> {
                     var cartProvider =
                         Provider.of<CartProvider>(context, listen: false);
                     cartProvider.setShippingAddress(model.shipping);
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => VerifyPhone()));
+                    Navigator.push(
+                        context,
+                        PageTransition(
+                            type: PageTransitionType.rightToLeft,
+                            child: VerifyPhone()));
                   }, fullWidth: true),
                 )
               ],

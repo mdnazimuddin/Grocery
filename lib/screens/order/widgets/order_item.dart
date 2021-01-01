@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:Uthbay/models/order.dart';
 import 'package:Uthbay/models/order_model.dart';
 import 'package:Uthbay/screens/order/components/order_details.dart';
@@ -8,13 +10,32 @@ class OrderItem extends StatelessWidget {
   OrderItem({this.orderModel});
   @override
   Widget build(BuildContext context) {
+    // print("Order: ${orderModel.company}");
+    // return Container();
     return Container(
       margin: EdgeInsets.all(10),
       padding: EdgeInsets.all(10),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _orderStatus(this.orderModel.status),
+          _orderStatus(orderModel.status),
           Divider(color: Colors.grey),
+          SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                orderModel.company,
+                textAlign: TextAlign.left,
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              Text(
+                "\$ ${orderModel.totalAmount}",
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+              )
+            ],
+          ),
           SizedBox(height: 10),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -23,7 +44,7 @@ class OrderItem extends StatelessWidget {
                 Icon(Icons.edit, color: Colors.redAccent),
                 Text(
                   "Order ID",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                 ),
               ),
               Text(
@@ -40,7 +61,7 @@ class OrderItem extends StatelessWidget {
                 Icon(Icons.today, color: Colors.redAccent),
                 Text(
                   "Order Date",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                 ),
               ),
               Text(
@@ -55,15 +76,18 @@ class OrderItem extends StatelessWidget {
             children: [
               flatButton(
                 Row(children: [
-                  Text("  Order Details  "),
-                  Icon(Icons.chevron_right),
+                  Text("  Order Details  ",
+                      style: TextStyle(color: Colors.white)),
+                  Icon(Icons.chevron_right, color: Colors.white),
                 ]),
                 Colors.green,
                 () {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => OrderDetailsPage()));
+                          builder: (context) => OrderDetailsPage(
+                                orderId: orderModel.id,
+                              )));
                 },
               ),
             ],

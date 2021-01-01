@@ -1,4 +1,7 @@
+import 'package:Uthbay/screens/signin/signin_screen.dart';
+import 'package:Uthbay/screens/signup/signup_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:page_transition/page_transition.dart';
 
 class BasePage extends StatelessWidget {
   @override
@@ -19,6 +22,17 @@ class BasePage extends StatelessWidget {
               child: Center(
                 child: Column(
                   children: [
+                    // Text(
+                    //   "UTHBAY GROCERY",
+                    //   style: TextStyle(
+                    //     color: Colors.redAccent,
+                    //     fontSize: 24,
+                    //     fontWeight: FontWeight.bold,
+                    //   ),
+                    // ),
+                    SizedBox(
+                      height: 5,
+                    ),
                     Text(
                       "Sign up",
                       style: TextStyle(
@@ -59,7 +73,7 @@ class BasePage extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             SizedBox(
-                              height: 14,
+                              height: 24,
                               child: Image(
                                 image: AssetImage("assets/images/google.png"),
                               ),
@@ -81,61 +95,48 @@ class BasePage extends StatelessWidget {
                     SizedBox(
                       height: 15,
                     ),
-                    Container(
-                      margin: EdgeInsets.symmetric(horizontal: 49),
+                    InkWell(
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            PageTransition(
+                                type: PageTransitionType.rightToLeft,
+                                child: SignUpScreen()));
+                      },
                       child: Container(
-                        height: 42,
-                        width: 262,
-                        decoration: BoxDecoration(
-                            color: Colors.redAccent,
-                            borderRadius: BorderRadius.circular(50),
-                            boxShadow: [
-                              BoxShadow(
-                                  color: Colors.black.withOpacity(0.8),
-                                  blurRadius: 4)
-                            ]),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SizedBox(
-                              height: 14,
-                              child: Icon(Icons.email),
-                            ),
-                            Container(
-                              margin: EdgeInsets.only(left: 10),
-                              child: Text(
-                                "Continue with Email",
-                                style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 12,
-                                    fontStyle: FontStyle.italic),
+                        margin: EdgeInsets.symmetric(horizontal: 49),
+                        child: Container(
+                          height: 42,
+                          width: 262,
+                          decoration: BoxDecoration(
+                              color: Colors.redAccent,
+                              borderRadius: BorderRadius.circular(50),
+                              boxShadow: [
+                                BoxShadow(
+                                    color: Colors.black.withOpacity(0.8),
+                                    blurRadius: 4)
+                              ]),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                height: 24,
+                                child: Image(
+                                  image: AssetImage("assets/images/gmail.png"),
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                      height: 15,
-                    ),
-                    Container(
-                      margin: EdgeInsets.symmetric(horizontal: 49),
-                      child: Container(
-                        height: 42,
-                        width: 262,
-                        decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(50),
-                            border:
-                                Border.all(width: 1, color: Color(0xFFA7A3A3))),
-                        child: Center(
-                          child: Text(
-                            "I'll use email or phone",
-                            style: TextStyle(
-                                color: Color(0xFF5960FF),
-                                fontSize: 16,
-                                fontStyle: FontStyle.italic),
+                              Container(
+                                margin: EdgeInsets.only(left: 10),
+                                child: Text(
+                                  "Continue with Email",
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                      fontStyle: FontStyle.italic),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
@@ -147,20 +148,29 @@ class BasePage extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          "Alredy have account?",
+                          "Already have an account?",
                           style: TextStyle(
                               color: Color(0xFFA7A3A3),
                               fontStyle: FontStyle.italic,
                               fontSize: 16),
                         ),
-                        Container(
-                          margin: EdgeInsets.only(left: 8),
-                          child: Text(
-                            "Login",
-                            style: TextStyle(
-                                color: Color(0xFF5960FF),
-                                fontSize: 16,
-                                fontStyle: FontStyle.italic),
+                        InkWell(
+                          onTap: () {
+                            Navigator.push(
+                                context,
+                                PageTransition(
+                                    type: PageTransitionType.rightToLeft,
+                                    child: SignInScreen()));
+                          },
+                          child: Container(
+                            margin: EdgeInsets.only(left: 8),
+                            child: Text(
+                              "Login",
+                              style: TextStyle(
+                                  color: Colors.redAccent,
+                                  fontSize: 16,
+                                  fontStyle: FontStyle.italic),
+                            ),
                           ),
                         )
                       ],

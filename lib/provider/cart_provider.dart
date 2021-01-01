@@ -22,6 +22,9 @@ class CartProvider with ChangeNotifier {
   OrderTax _orderTax;
   bool _isOrderCreated = false;
 
+  bool _dataNotFound = false;
+  bool get dataNotFound => _dataNotFound;
+
   List<CartItem> get cartItems => _cartItems;
   double get totalRecords => _cartItems.length.toDouble();
   double get totalAmount => _cartItems != null
@@ -94,12 +97,20 @@ class CartProvider with ChangeNotifier {
   fetchCartItems(int groceryId) async {
     if (_cartItems == null) resetStreams();
 
+    if (_orderModel == null) {
+      _orderModel = new Order();
+    }
+    _dataNotFound = false;
     await _apiService.getCartItems(groceryId).then((cartRequestModel) {
       if (cartRequestModel.data != null) {
         _cartItems = [];
         _cartItems.addAll(cartRequestModel.data);
       }
-
+      if (cartRequestModel.data.length == 0) {
+        _dataNotFound = true;
+      } else {
+        _dataNotFound = false;
+      }
       notifyListeners();
     });
   }
@@ -142,14 +153,8 @@ class CartProvider with ChangeNotifier {
     });
   }
 
-  void removeItem(int productId,
-      {int variationId, int groceryId, Function onCallback}) async {
-    var isProductExist = _cartItems.firstWhere(
-        (prd) => prd.productId == productId && prd.variationId == variationId,
-        orElse: () => null);
-    if (isProductExist != null) {
-      _cartItems.remove(isProductExist);
-    }
+  void removeItem(int productId, {int variationId, int groceryId}) async {
+    _dataNotFound = false;
     await _apiService
         .removetoCart(
       groceryId: groceryId,
@@ -161,9 +166,13 @@ class CartProvider with ChangeNotifier {
         _cartItems = [];
         _cartItems.addAll(cartResponseModel.data);
       }
-      onCallback(cartResponseModel);
-      notifyListeners();
+      if (cartResponseModel.data.length == 0) {
+        _dataNotFound = true;
+      } else {
+        _dataNotFound = false;
+      }
     });
+    notifyListeners();
   }
 
   fetchShippingDetails() async {
@@ -181,13 +190,10 @@ class CartProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  fetchPickup() {
-    if (_pickupModel == null) {
-      _pickupModel = new PickupModel();
-    }
+  fetchPickup(String groceryId) async {
+    _pickupModel = new PickupModel();
 
-    _pickupModel =
-        PickupModel(groceryId: 1, selfPickup: true, onlineOrder: true);
+    _pickupModel = await _apiService.fetchPickup(groceryId);
     notifyListeners();
   }
 
@@ -218,13 +224,10 @@ class CartProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  fetchOrderTax() {
-    if (_orderTax == null) {
-      _orderTax = new OrderTax();
-    }
+  fetchOrderTax(String groceryId) async {
+    _orderTax = new OrderTax();
 
-    _orderTax = OrderTax(
-        groceryId: 1, uthbayService: 3.0, productTax: 8.8, delivery: "8.0");
+    _orderTax = await _apiService.fetchOrderTax(groceryId);
     notifyListeners();
   }
 
@@ -233,31 +236,13 @@ class CartProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void createOrder() async {
-    if (_orderModel.shipping == null) {
-      _orderModel.shipping = new Shipping();
-    }
-    print(_orderModel.delivery);
-    // if (this._shipping != null) {
-    //   _orderModel.shipping = _shipping;
-    // }
-    // if (_shippingPhone != null) {
-    //   _orderModel.shipping.phone = _shippingPhone;
-    // }
-
-    // if (_orderModel.items == null) {
-    //   _orderModel.items = new List<CartItem>();
-    // }
-
-    // _cartItems.forEach((item) {
-    //   _orderModel.items.add(item);
-    // });
-
-    // await _apiService.createOrder(orderModel).then((value) {
-    //   if (value) {
-    //     _isOrderCreated = true;
-    //     notifyListeners();
-    //   }
-    // });
+  createOrder() async {
+    await _apiService.createOrder(orderModel).then((value) {
+      if (value) {
+        _isOrderCreated = true;
+        _cartItems = [];
+        notifyListeners();
+      }
+    });
   }
 }

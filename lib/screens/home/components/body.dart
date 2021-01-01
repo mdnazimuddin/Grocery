@@ -2,10 +2,14 @@ import 'dart:async';
 
 import 'package:Uthbay/models/customer_address.dart';
 import 'package:Uthbay/models/grocery_list.dart';
+import 'package:Uthbay/provider/grocery_provider.dart';
 import 'package:Uthbay/screens/shop/shop_screen.dart';
+import 'package:Uthbay/screens/widgets/DrawerPage.dart';
+import 'package:Uthbay/screens/widgets/build_app_bar.dart';
 import 'package:Uthbay/services/api_service.dart';
-import 'package:Uthbay/utilis/ProgressHUD.dart';
 import 'package:flutter/material.dart';
+import 'package:page_transition/page_transition.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'address.dart';
@@ -17,64 +21,70 @@ class Body extends StatefulWidget {
 
 class _BodyState extends State<Body> {
   var locationController = new TextEditingController();
+  int _page = 1;
+  ScrollController _scrollController = new ScrollController();
+  final _searchQuery = new TextEditingController();
   String address;
+  Map<String, dynamic> _addressMap;
   bool addressStatus = false;
   APIService apiService;
-  List<GroceryList> groceriesList = new List<GroceryList>();
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
+  String firstName;
+  String email;
+  String imgUrl;
 
   getResult() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    String _firstName = prefs.getString('first_name');
+    String _email = prefs.getString('email');
+    String _imgUrl = prefs.getString('img_src');
     bool _status = prefs.getStringList('address') != null ? true : false;
-    print(_status);
     if (_status) {
       var _address = CustomerAddress().toMap(prefs.getStringList('address'));
       setState(() {
         this.address =
             "${_address['address_1']}, ${_address['city']}, ${_address['state']}";
         this.addressStatus = true;
+        this._addressMap = _address;
+        firstName = _firstName;
+        email = _email;
+        imgUrl = _imgUrl;
       });
-      print(address);
+      print(_address['zip'].toString());
+      var groceriesList = Provider.of<GroceryProvider>(context, listen: false);
+      groceriesList.resetStreams();
+      groceriesList.setLoadingState(LoadMoreStatus.INITIAL);
+      groceriesList.fetchGroceries(location: _address['zip'].toString());
+      _scrollController.addListener(() {
+        if (_scrollController.position.pixels ==
+            _scrollController.position.maxScrollExtent) {
+          groceriesList.setLoadingState(LoadMoreStatus.LOADING);
+
+          groceriesList.fetchGroceries(
+              pageNumber: ++_page, location: _address['zip'].toString());
+        }
+      });
     }
-  }
-
-  getGrocery() async {
-    apiService.getGroceriesList().then((data) => {groceriesList = data});
-  }
-
-  _onLayoutDone(_) {
-    getResult();
-    getGrocery();
   }
 
   @override
   void initState() {
-    WidgetsBinding.instance.addPostFrameCallback(_onLayoutDone);
     super.initState();
     apiService = new APIService();
+    getResult();
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+
+    // });
   }
 
-  List<String> langnames = [
-    'Halal Grocery Shop',
-    'Freash Grocery Shop',
-    'US Bangla Grocery Shop',
-    'BD Food Grocery',
-    'Healthy Food'
-  ];
-  List<String> images = [
-    "https://images.wsj.net/im-57265?width=1280&size=1.77777778",
-    "https://thumbs.dreamstime.com/b/hygienic-smiling-asian-delivery-man-carrying-grocery-tray-box-supermarket-banner-background-179268522.jpg",
-    "https://st2.depositphotos.com/7341970/11081/v/950/depositphotos_110819808-stock-illustration-grocery-shopping-discount-banner.jpg",
-    "https://st2.depositphotos.com/7341970/11081/v/950/depositphotos_110819808-stock-illustration-grocery-shopping-discount-banner.jpg",
-    "https://thumbs.dreamstime.com/b/hygienic-smiling-asian-delivery-man-carrying-grocery-tray-box-supermarket-banner-background-179268522.jpg",
-  ];
+  _onSearchChang(String searchValue) {
+    var groceriesList = Provider.of<GroceryProvider>(context, listen: false);
+    groceriesList.resetStreams();
+    groceriesList.setLoadingState(LoadMoreStatus.INITIAL);
+    groceriesList.fetchGroceries(
+        location: _addressMap['zip'].toString(), search: searchValue);
+  }
 
-  List<String> des = [
-    "Grocery",
-    "Grocery",
-    "Grocery",
-    "Grocery",
-    "Grocery",
-  ];
   @override
   void dispose() {
     super.dispose();
@@ -82,7 +92,13 @@ class _BodyState extends State<Body> {
 
   @override
   Widget build(BuildContext context) {
-    return addressStatus ? _uipage(context) : _initpage(context);
+    return Scaffold(
+      key: _scaffoldKey,
+      drawer:
+          DrawerPage.drawer(context, _scaffoldKey, firstName, email, imgUrl),
+      appBar: buildAppBar(context),
+      body: addressStatus ? _uipage(context) : _initpage(context),
+    );
   }
 
   Widget _initpage(BuildContext context) {
@@ -122,14 +138,12 @@ class _BodyState extends State<Body> {
                     child: FlatButton(
                       padding:
                           EdgeInsets.symmetric(vertical: 12, horizontal: 80),
-                      onPressed: () async {
-                        bool status = await Navigator.push(context,
-                            MaterialPageRoute(builder: (context) => Address()));
-                        WidgetsBinding.instance
-                            .addPostFrameCallback(_onLayoutDone);
-                        setState(() {
-                          this.addressStatus = status;
-                        });
+                      onPressed: () {
+                        Navigator.pushReplacement(
+                            context,
+                            PageTransition(
+                                type: PageTransitionType.rightToLeft,
+                                child: Address()));
                       },
                       child: Text(
                         "Enter address",
@@ -146,6 +160,66 @@ class _BodyState extends State<Body> {
         ),
       ],
     );
+  }
+
+  Widget _groceriesList() {
+    return new Consumer<GroceryProvider>(
+      builder: (BuildContext context, grocery, child) {
+        Timer(const Duration(microseconds: 10), () {
+          return _returnText();
+        });
+        if (grocery.allGrocery != null &&
+            grocery.allGrocery.length > 0 &&
+            grocery.getLoadMoreStatus() != LoadMoreStatus.INITIAL)
+          return _buildGroceryList(
+            grocery.allGrocery,
+            grocery.getLoadMoreStatus() == LoadMoreStatus.LOADING,
+          );
+        else if (grocery.dataNotFound) {
+          return _returnText();
+        } else {
+          return Center(
+              child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation(Colors.amber),
+          ));
+        }
+      },
+    );
+  }
+
+  Widget _returnText() {
+    return Center(
+      child: Container(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text("Data Not Found"),
+            IconButton(
+              icon: Icon(Icons.refresh),
+              onPressed: () {
+                var groceriesList =
+                    Provider.of<GroceryProvider>(context, listen: false);
+                groceriesList.resetStreams();
+                groceriesList.setLoadingState(LoadMoreStatus.INITIAL);
+                groceriesList.fetchGroceries(
+                    location: _addressMap['zip'].toString());
+              },
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGroceryList(List<GroceryList> groceries, bool isLoadMore) {
+    return ListView.builder(
+        controller: _scrollController,
+        itemCount: groceries.length ?? 0,
+        itemBuilder: (context, index) {
+          GroceryList grocery = groceries[index];
+          return customCard(grocery);
+        });
   }
 
   Widget _uipage(BuildContext context) {
@@ -206,6 +280,10 @@ class _BodyState extends State<Body> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               child: TextField(
+                controller: _searchQuery,
+                onSubmitted: (value) {
+                  this._onSearchChang(value);
+                },
                 decoration: InputDecoration(
                   contentPadding:
                       new EdgeInsets.symmetric(vertical: 10.0, horizontal: 5.0),
@@ -221,6 +299,10 @@ class _BodyState extends State<Body> {
                     ),
                   ),
                   hintText: "Search Near Grocery ...",
+                  hintStyle: TextStyle(
+                      color: Colors.redAccent,
+                      fontWeight: FontWeight.normal,
+                      fontSize: 14),
                   prefixIcon: Padding(
                     padding: const EdgeInsetsDirectional.only(start: 5.0),
                     child: Icon(
@@ -249,27 +331,31 @@ class _BodyState extends State<Body> {
         //     ),
         //   ),
         // ),
+        // Expanded(
+        //   flex: 10,
+        //   child: FutureBuilder<Object>(
+        //       future: apiService.getGroceriesList(),
+        //       builder: (context, snapshot) {
+        //         if (!snapshot.hasData)
+        //           return Center(
+        //               child: CircularProgressIndicator(
+        //             valueColor: AlwaysStoppedAnimation(Colors.amber),
+        //           ));
+        //         else {
+        //           print(snapshot.data);
+        //           List<GroceryList> groceries = snapshot.data;
+        //           return ListView.builder(
+        //               itemCount: groceries.length ?? 0,
+        //               itemBuilder: (context, index) {
+        //                 GroceryList grocery = groceries[index];
+        //                 return customCard(grocery);
+        //               });
+        //         }
+        //       }),
+        // ),
         Expanded(
           flex: 10,
-          child: FutureBuilder<Object>(
-              future: apiService.getGroceriesList(),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData)
-                  return Center(
-                      child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation(Colors.amber),
-                  ));
-                else {
-                  print(snapshot.data);
-                  List<GroceryList> groceries = snapshot.data;
-                  return ListView.builder(
-                      itemCount: groceriesList.length ?? 0,
-                      itemBuilder: (context, index) {
-                        GroceryList grocery = groceries[index];
-                        return customCard(grocery);
-                      });
-                }
-              }),
+          child: _groceriesList(),
         ),
       ],
     );
@@ -283,6 +369,8 @@ class _BodyState extends State<Body> {
       ),
       child: InkWell(
         onTap: () async {
+          Provider.of<GroceryProvider>(context, listen: false)
+              .setGrocery(grocery);
           Navigator.push(
               context,
               MaterialPageRoute(
@@ -314,31 +402,34 @@ class _BodyState extends State<Body> {
                         color: Colors.redAccent,
                       ),
                     ),
-                    Container(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Container(
-                            padding: EdgeInsets.only(left: 5),
-                            color: Colors.red,
-                            child: Row(
-                              children: [
-                                Text(
-                                  grocery.rating,
-                                  style: TextStyle(
-                                      color: Colors.white, fontSize: 16),
-                                ),
-                                Icon(
-                                  Icons.star,
-                                  color: Colors.white,
-                                  size: 16,
-                                ),
-                              ],
+                    Visibility(
+                      visible: int.parse(grocery.rating) > 0,
+                      child: Container(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Container(
+                              padding: EdgeInsets.only(left: 5),
+                              color: Colors.redAccent,
+                              child: Row(
+                                children: [
+                                  Text(
+                                    grocery.rating,
+                                    style: TextStyle(
+                                        color: Colors.white, fontSize: 16),
+                                  ),
+                                  Icon(
+                                    Icons.star,
+                                    color: Colors.white,
+                                    size: 16,
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    )
+                    ),
                   ],
                 ),
                 Container(
@@ -347,29 +438,34 @@ class _BodyState extends State<Body> {
                     leading: CircleAvatar(
                         backgroundImage: NetworkImage(grocery.logo),
                         radius: 25.0),
-                    title: Text(
-                      grocery.name,
-                      maxLines: 2,
-                      style: TextStyle(
-                        color: Colors.black87,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                      ),
+                    title: Row(
+                      children: [
+                        Text(
+                          grocery.name,
+                          maxLines: 2,
+                          style: TextStyle(
+                            color: Colors.black87,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
                     ),
                     subtitle: Text(
                       "${grocery.address.address_1}, ${grocery.address.city}, ${grocery.address.state}",
+                      maxLines: 2,
                       style: TextStyle(
                         color: Colors.black54,
-                        fontSize: 14,
+                        fontSize: 13,
                       ),
                     ),
                     trailing: Text(
-                      grocery.opening_status ? 'Open' : 'Close',
+                      grocery.opening_status ? 'Opened' : 'Closed',
                       style: TextStyle(
                         color:
                             grocery.opening_status ? Colors.green : Colors.red,
                         fontWeight: FontWeight.bold,
-                        fontSize: 14,
+                        fontSize: 13,
                       ),
                     ),
                   ),

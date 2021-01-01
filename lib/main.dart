@@ -1,11 +1,15 @@
 import 'dart:ui';
 
 import 'package:Uthbay/provider/cart_provider.dart';
+import 'package:Uthbay/provider/customer_provider.dart';
+import 'package:Uthbay/provider/grocery_provider.dart';
 import 'package:Uthbay/provider/loader_provider.dart';
 import 'package:Uthbay/provider/order_provider.dart';
 import 'package:Uthbay/provider/products_provider.dart';
 import 'package:Uthbay/screens/base/base_screen.dart';
 import 'package:Uthbay/screens/checkout/components/pickpu.dart';
+import 'package:Uthbay/screens/home/home_screen.dart';
+import 'package:Uthbay/screens/order/components/order_details.dart';
 import 'package:Uthbay/screens/order/orders_page.dart';
 import 'package:Uthbay/screens/payment/components/paypal_payment.dart';
 import 'package:Uthbay/screens/payment/payment_screen.dart';
@@ -14,6 +18,7 @@ import 'package:Uthbay/screens/payment/widgets/new_card.dart';
 import 'package:Uthbay/screens/product/cart/cart_page.dart';
 import 'package:Uthbay/screens/product/details/product_details.dart';
 import 'package:Uthbay/screens/product/product_screen.dart';
+import 'package:Uthbay/screens/shop/shop_screen.dart';
 import 'package:Uthbay/screens/splash/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -28,12 +33,28 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
+          create: (context) => GroceryProvider(),
+          child: HomeScreen(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => CustomerProvider(),
+          child: HomeScreen(),
+        ),
+        ChangeNotifierProvider(
           create: (context) => ProductProvider(),
           child: ProductScreen(),
         ),
         ChangeNotifierProvider(
           create: (context) => LoaderProvider(),
           child: BaseScreen(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => LoaderProvider(),
+          child: CartPage(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => CartProvider(),
+          child: ShopScreen(),
         ),
         ChangeNotifierProvider(
           create: (context) => CartProvider(),
@@ -48,12 +69,24 @@ class MyApp extends StatelessWidget {
           child: CartPage(),
         ),
         ChangeNotifierProvider(
+          create: (context) => GroceryProvider(),
+          child: PickupPage(),
+        ),
+        ChangeNotifierProvider(
           create: (context) => CartProvider(),
           child: PickupPage(),
         ),
         ChangeNotifierProvider(
+          create: (context) => GroceryProvider(),
+          child: PaymentScreen(),
+        ),
+        ChangeNotifierProvider(
           create: (context) => OrderProvider(),
           child: Orderspage(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => OrderProvider(),
+          child: OrderDetailsPage(),
         )
       ],
       child: MaterialApp(
@@ -68,8 +101,8 @@ class MyApp extends StatelessWidget {
           ),
           brightness: Brightness.light,
           accentColor: Colors.redAccent,
-          dividerColor: Colors.redAccent,
-          hintColor: Colors.redAccent,
+          // dividerColor: Colors.redAccent,
+          // hintColor: Colors.redAccent,
           focusColor: Colors.redAccent,
           textTheme: TextTheme(
             headline1: TextStyle(fontSize: 22.0, color: Colors.redAccent),

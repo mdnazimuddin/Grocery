@@ -67,7 +67,11 @@ class _CreditCardFormWidgetState extends State<CreditCardFormWidget> {
     cvvCode = widget.cvvCode ?? '';
 
     creditCardModel = CreditCardModel(
-        cardNumber, expiryDate, cardHolderName, cvvCode, isCvvFocused);
+        cardNumber: cardNumber,
+        expiryDate: expiryDate,
+        cardHolderName: cardHolderName,
+        cvvCode: cvvCode,
+        isCvvFocused: isCvvFocused);
   }
 
   @override
@@ -142,6 +146,7 @@ class _CreditCardFormWidgetState extends State<CreditCardFormWidget> {
                   border: const OutlineInputBorder(),
                   labelText: widget.localizedText.cardNumberLabel,
                   hintText: widget.localizedText.cardNumberHint,
+                  focusColor: widget.textColor,
                 ),
                 keyboardType: TextInputType.number,
                 textInputAction: TextInputAction.next,

@@ -1,9 +1,12 @@
 import 'package:Uthbay/models/payment_method.dart';
+import 'package:Uthbay/models/stripe_model.dart';
+import 'package:Uthbay/provider/grocery_provider.dart';
 import 'package:Uthbay/screens/checkout/checkout_base.dart';
 import 'package:Uthbay/screens/payment/widgets/payment_card_action_list.dart';
 import 'package:Uthbay/screens/payment/widgets/payment_method_list_item.dart';
 import 'package:Uthbay/services/payment_service.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class PaymentScreen extends CheckoutBasePage {
   final String groceryId;
@@ -19,91 +22,115 @@ class _PaymentScreenState extends CheckoutBasePageState<PaymentScreen> {
   @override
   initState() {
     super.initState();
-    StripeService.init();
+    var provider = Provider.of<GroceryProvider>(context, listen: false);
+    print(provider.grocery.name);
+    provider.fetchPaymentSystem(provider.grocery.id);
+    provider.fetchStripeAccount(provider.grocery.id).then((_) {
+      var stripe = provider.stripeAccount;
+      StripeService.init(
+          publishableKey: stripe.publishableKey,
+          secret: stripe.secret,
+          merchantId: stripe.merchantId,
+          androidPayMode: stripe.androidPayMode);
+      print("Stripe Account ${stripe.androidPayMode}");
+    });
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget pageUI() {
     list = new PaymentMethodList();
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          SizedBox(height: 15),
-          list.paymentsList.length > 0
-              ? Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: ListTile(
-                    contentPadding: EdgeInsets.symmetric(vertical: 0),
-                    leading: Icon(
-                      Icons.payment,
-                      color: Theme.of(context).hintColor,
-                    ),
-                    title: Text(
-                      "Payment Options",
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.headline4,
-                    ),
-                    subtitle: Text("Select you preffered payment Mode"),
+    return Consumer<GroceryProvider>(
+      builder: (context, model, child) {
+        if (model.paymentSystem.groceryId != null) {
+          return SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                SizedBox(height: 15),
+                Visibility(
+                  visible: model.paymentSystem.stripe,
+                  child: Column(
+                    children: [
+                      list.paymentsList.length > 0
+                          ? Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 20),
+                              child: ListTile(
+                                contentPadding:
+                                    EdgeInsets.symmetric(vertical: 0),
+                                leading: Icon(
+                                  Icons.payment,
+                                  color: Theme.of(context).hintColor,
+                                ),
+                                title: Text(
+                                  "Payment Options",
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: Theme.of(context).textTheme.headline4,
+                                ),
+                                subtitle:
+                                    Text("Select you preffered payment Mode"),
+                              ),
+                            )
+                          : SizedBox(height: 0),
+                      SizedBox(height: 10),
+                      paymentInfoList(context),
+                    ],
                   ),
-                )
-              : SizedBox(height: 0),
-          SizedBox(height: 10),
-          // ListView.separated(
-          //   scrollDirection: Axis.vertical,
-          //   shrinkWrap: true,
-          //   primary: false,
-          //   itemBuilder: (context, index) {
-          //     return PaymentMethodListItem(
-          //       paymentMethod: list.paymentsList.elementAt(index),
-          //     );
-          //   },
-          //   itemCount: list.paymentsList.length,
-          //   separatorBuilder: (context, index) {
-          //     return SizedBox(height: 10);
-          //   },
-          // ),
-
-          paymentInfoList(context),
-          SizedBox(height: 5),
-          list.cashList.length > 0
-              ? Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: ListTile(
-                    contentPadding: EdgeInsets.symmetric(vertical: 0),
-                    leading: Icon(
-                      Icons.monetization_on,
-                      color: Theme.of(context).hintColor,
-                    ),
-                    title: Text(
-                      "Cash on Delivery",
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.headline4,
-                    ),
-                    subtitle: Text("Select you preffered payment Mode"),
+                ),
+                SizedBox(height: 5),
+                Visibility(
+                  visible: model.paymentSystem.cod,
+                  child: Column(
+                    children: [
+                      list.cashList.length > 0
+                          ? Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 20),
+                              child: ListTile(
+                                contentPadding:
+                                    EdgeInsets.symmetric(vertical: 0),
+                                leading: Icon(
+                                  Icons.monetization_on,
+                                  color: Theme.of(context).hintColor,
+                                ),
+                                title: Text(
+                                  "Cash on Delivery",
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: Theme.of(context).textTheme.headline4,
+                                ),
+                                subtitle:
+                                    Text("Select you preffered payment Mode"),
+                              ),
+                            )
+                          : SizedBox(height: 0),
+                      SizedBox(height: 10),
+                      ListView.separated(
+                        scrollDirection: Axis.vertical,
+                        shrinkWrap: true,
+                        primary: false,
+                        itemBuilder: (context, index) {
+                          return PaymentMethodListItem(
+                            paymentMethod: list.cashList.elementAt(index),
+                          );
+                        },
+                        itemCount: list.cashList.length,
+                        separatorBuilder: (context, index) {
+                          return SizedBox(height: 10);
+                        },
+                      )
+                    ],
                   ),
-                )
-              : SizedBox(height: 0),
-          SizedBox(height: 10),
-          ListView.separated(
-            scrollDirection: Axis.vertical,
-            shrinkWrap: true,
-            primary: false,
-            itemBuilder: (context, index) {
-              return PaymentMethodListItem(
-                paymentMethod: list.cashList.elementAt(index),
-              );
-            },
-            itemCount: list.cashList.length,
-            separatorBuilder: (context, index) {
-              return SizedBox(height: 10);
-            },
-          )
-        ],
-      ),
+                ),
+              ],
+            ),
+          );
+        } else {
+          return Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+      },
     );
   }
 

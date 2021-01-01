@@ -68,12 +68,17 @@ class CheckoutBasePageState<T extends CheckoutBasePage> extends State<T> {
       brightness: Brightness.dark,
       elevation: 0,
       automaticallyImplyLeading: showBackbutton,
-      leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back_ios,
-            color: Colors.white,
-          ),
-          onPressed: () => Navigator.pop(context)),
+      iconTheme: IconThemeData(
+        color: Colors.white, //change your color here
+      ),
+      // leading: showBackbutton
+      //     ? IconButton(
+      //         icon: Icon(
+      //           Icons.arrow_back_ios,
+      //           color: Colors.white,
+      //         ),
+      //         onPressed: () => Navigator.pop(context))
+      //     : Container(),
       title: Text(
         "Checkout",
         style: TextStyle(color: Colors.white),

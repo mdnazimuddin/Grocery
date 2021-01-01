@@ -41,6 +41,8 @@ dependencies:
   http: ^0.11.3+17
   progress_dialog: ^1.2.2
   introduction_screen: ^1.0.7
+  page_transition: "^1.1.7+2"
+  bubble_bottom_bar: ^1.2.0
 
 dev_dependencies:
   flutter_test:

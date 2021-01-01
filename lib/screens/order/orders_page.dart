@@ -1,6 +1,7 @@
 import 'package:Uthbay/models/login_model.dart';
 import 'package:Uthbay/models/order.dart';
 import 'package:Uthbay/models/order_model.dart';
+import 'package:Uthbay/provider/grocery_provider.dart';
 import 'package:Uthbay/provider/order_provider.dart';
 import 'package:Uthbay/screens/order/widgets/order_item.dart';
 import 'package:flutter/material.dart';
@@ -12,42 +13,28 @@ class Orderspage extends StatefulWidget {
 }
 
 class _OrderspageState extends State<Orderspage> {
-  List<OrderModel> orders;
+  // List<OrderModel> orders;
   @override
   void initState() {
     super.initState();
-    orders = new List<OrderModel>();
-    OrderModel order = OrderModel(
-      status: "pending",
-      orderNumber: "231234",
-      orderDate: DateTime.parse("2020-12-12T21:28:36"),
-    );
-
-    OrderModel order2 = OrderModel(
-      status: "completed",
-      orderNumber: "65478",
-      orderDate: DateTime.parse("2020-18-12T21:28:36"),
-    );
-
-    orders.add(order);
-    orders.add(order2);
-
-    // var orderProvider = Provider.of<OrderProvider>(context, listen: false);
-    // orderProvider.fetchOrders();
+    
+    var grocery = Provider.of<GroceryProvider>(context, listen: false).grocery;
+    var orderProvider = Provider.of<OrderProvider>(context, listen: false);
+    orderProvider.fetchOrders(grocery.id);
   }
 
   @override
   Widget build(BuildContext context) {
-    return _listView(context, orders);
-    // return new Consumer<OrderProvider>(builder: (context, orderModel, child) {
-    //   if (orderModel.allOrders != null && orderModel.allOrders.length > 0) {
-    //     return _listView(context, orders);
-    //   } else {
-    //     return Center(
-    //       child: CircularProgressIndicator(),
-    //     );
-    //   }
-    // });
+    // return _listView(context, orders);
+    return new Consumer<OrderProvider>(builder: (context, orderModel, child) {
+      if (orderModel.allOrders != null && orderModel.allOrders.length > 0) {
+        return _listView(context, orderModel.allOrders);
+      } else {
+        return Center(
+          child: CircularProgressIndicator(),
+        );
+      }
+    });
   }
 
   Widget _listView(BuildContext context, List<OrderModel> order) {

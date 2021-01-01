@@ -33,7 +33,7 @@ class PaymentCardActionListItem extends StatelessWidget {
           vertical: 8,
         ),
         decoration: BoxDecoration(
-            color: Theme.of(context).focusColor.withOpacity(0.1),
+            color: Theme.of(context).focusColor.withOpacity(0.000),
             boxShadow: [
               BoxShadow(
                   color: Theme.of(context).focusColor.withOpacity(0.1),

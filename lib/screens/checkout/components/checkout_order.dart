@@ -1,8 +1,12 @@
 import 'package:Uthbay/models/cart_response_model.dart';
+import 'package:Uthbay/models/order.dart';
 import 'package:Uthbay/provider/cart_provider.dart';
+import 'package:Uthbay/provider/grocery_provider.dart';
 import 'package:Uthbay/screens/checkout/checkout_base.dart';
+import 'package:Uthbay/screens/payment/payment_screen.dart';
 import 'package:Uthbay/utilis/form_helper.dart';
 import 'package:flutter/material.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
 
 class CheckoutOrder extends CheckoutBasePage {
@@ -21,9 +25,10 @@ class _CheckoutOrderState extends CheckoutBasePageState<CheckoutOrder> {
     // TODO: implement initState
     super.initState();
     currentPage = 0;
+    var grocery = Provider.of<GroceryProvider>(context, listen: false).grocery;
     var cartProvider = Provider.of<CartProvider>(context, listen: false);
     cartProvider.fetchShippingDetails();
-    cartProvider.fetchOrderTax();
+    cartProvider.fetchOrderTax(grocery.id);
   }
 
   @override
@@ -50,16 +55,37 @@ class _CheckoutOrderState extends CheckoutBasePageState<CheckoutOrder> {
             child: FormHelper.saveButton(
               "Place order",
               () {
+                var grocery =
+                    Provider.of<GroceryProvider>(context, listen: false)
+                        .grocery;
                 var cartProvider =
                     Provider.of<CartProvider>(context, listen: false);
+                print(grocery.address.state);
+                cartProvider.orderModel.groceryId = int.parse(grocery.id);
                 cartProvider.orderModel.itemTotal = itemsAmount;
                 cartProvider.orderModel.productTax = productTaxes;
                 cartProvider.orderModel.delivery = delivery;
                 cartProvider.orderModel.uthbayService = uthbayService;
                 cartProvider.orderModel.totalAmount = total;
-                cartProvider.createOrder();
-                // Navigator.push(context,
-                //     MaterialPageRoute(builder: (context) => CheckoutOrder()));
+
+                cartProvider.orderModel.billing = new Billing();
+                cartProvider.orderModel.billing.address1 =
+                    grocery.address.address_1;
+                cartProvider.orderModel.billing.address2 =
+                    grocery.address.address_2;
+                cartProvider.orderModel.billing.city = grocery.address.city;
+                cartProvider.orderModel.billing.state = grocery.address.state;
+                cartProvider.orderModel.billing.postcode = grocery.address.zip;
+                cartProvider.orderModel.billing.company = grocery.name;
+
+                // cartProvider.createOrder();
+                if (total != null && double.parse(total) > 0) {
+                  Navigator.push(
+                      context,
+                      PageTransition(
+                          type: PageTransitionType.rightToLeft,
+                          child: PaymentScreen()));
+                }
               },
               fullWidth: true,
             ),
@@ -71,8 +97,8 @@ class _CheckoutOrderState extends CheckoutBasePageState<CheckoutOrder> {
 
   Widget shippingAddress() {
     return Consumer<CartProvider>(
-      builder: (context, customerModel, child) {
-        if (customerModel.shipping != null) {
+      builder: (context, order, child) {
+        if (order.shipping != null) {
           return Column(
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -82,15 +108,15 @@ class _CheckoutOrderState extends CheckoutBasePageState<CheckoutOrder> {
                 style: Theme.of(context).textTheme.labelHeading,
               ),
               Text(
-                customerModel.shipping.address1 ?? "",
+                order.shipping.address1 ?? "",
                 style: Theme.of(context).textTheme.labelText,
               ),
               Text(
-                customerModel.shipping.address2 ?? "",
+                order.shipping.address2 ?? "",
                 style: Theme.of(context).textTheme.labelText,
               ),
               Text(
-                "${customerModel.shipping.city ?? ""},${customerModel.shipping.state ?? ""}",
+                "${order.shipping.city ?? ""},${order.shipping.state ?? ""}",
                 style: Theme.of(context).textTheme.labelText,
               ),
             ],
@@ -106,7 +132,7 @@ class _CheckoutOrderState extends CheckoutBasePageState<CheckoutOrder> {
   Widget _orderLabel() {
     return Consumer<CartProvider>(
       builder: (context, cartModel, child) {
-        if (cartModel.orderTax != null) {
+        if (cartModel.orderTax.groceryId != null) {
           itemsAmount = "${cartModel.totalAmount}";
           uthbayService =
               "${((cartModel.orderTax.uthbayService * cartModel.totalAmount) / 100).toStringAsFixed(2)}";
@@ -135,7 +161,9 @@ class _CheckoutOrderState extends CheckoutBasePageState<CheckoutOrder> {
             ),
           );
         } else {
-          return Container();
+          return Center(
+            child: CircularProgressIndicator(),
+          );
         }
       },
     );
@@ -147,7 +175,10 @@ class _CheckoutOrderState extends CheckoutBasePageState<CheckoutOrder> {
       contentPadding: EdgeInsets.only(top: 0, bottom: 0, left: 2, right: 2),
       onTap: () {},
       title: new Text(
-        "Walmart",
+        Provider.of<GroceryProvider>(context, listen: false)
+            .grocery
+            .name
+            .toString(),
         style: Theme.of(context).textTheme.shopTitle,
       ),
       trailing: Text("\$ ${itemsAmount ?? ""}",
@@ -216,6 +247,9 @@ class _CheckoutOrderState extends CheckoutBasePageState<CheckoutOrder> {
     return new Consumer<CartProvider>(
       builder: (context, cartModel, child) {
         if (cartModel.cartItems != null && cartModel.cartItems.length > 0) {
+          var cartProvider = Provider.of<CartProvider>(context, listen: false);
+          cartProvider.orderModel.items = List<CartItem>();
+          cartProvider.orderModel.items = cartModel.cartItems;
           return Column(
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -248,7 +282,9 @@ class _CheckoutOrderState extends CheckoutBasePageState<CheckoutOrder> {
       contentPadding: EdgeInsets.all(2),
       onTap: () {},
       title: new Text(
-        item.productName,
+        item.variationId == 0
+            ? item.productName
+            : "${item.productName} (${item.attributeValue} ${item.attribute})",
         style: Theme.of(context).textTheme.productItemText,
       ),
       subtitle: Padding(

@@ -1,5 +1,11 @@
+import 'package:Uthbay/models/order.dart';
 import 'package:Uthbay/models/payment_method.dart';
+import 'package:Uthbay/provider/cart_provider.dart';
+import 'package:Uthbay/screens/checkout/components/order_success.dart';
 import 'package:flutter/material.dart';
+import 'package:page_transition/page_transition.dart';
+import 'package:progress_dialog/progress_dialog.dart';
+import 'package:provider/provider.dart';
 
 class PaymentMethodListItem extends StatelessWidget {
   PaymentMethod paymentMethod;
@@ -10,12 +16,22 @@ class PaymentMethodListItem extends StatelessWidget {
       splashColor: Theme.of(context).accentColor,
       focusColor: Theme.of(context).accentColor,
       highlightColor: Theme.of(context).primaryColor,
-      onTap: () {
-        if (this.paymentMethod.isRouteRedirect) {
-          Navigator.of(context).pushNamed(this.paymentMethod.route);
-        } else {
-          this.paymentMethod.onTap();
-        }
+      onTap: () async {
+        var cart = Provider.of<CartProvider>(context, listen: false);
+        ProgressDialog dialog = new ProgressDialog(context);
+        dialog.style(message: 'Please wait...');
+        await dialog.show();
+        cart.orderModel.payment = Payment();
+        cart.orderModel.payment.paymentMethod = "Cash on Delivery";
+        cart.orderModel.payment.paymentMethodTitle = 'Cash on Delivery';
+        cart.orderModel.payment.setPaid = false;
+
+        cart.orderModel.status = 'pending';
+        await dialog.hide();
+        Navigator.pushReplacement(
+            context,
+            PageTransition(
+                type: PageTransitionType.rightToLeft, child: OrderSuccess()));
       },
       child: Container(
         padding: EdgeInsets.symmetric(
@@ -23,7 +39,7 @@ class PaymentMethodListItem extends StatelessWidget {
           vertical: 8,
         ),
         decoration: BoxDecoration(
-            color: Theme.of(context).focusColor.withOpacity(0.1),
+            color: Theme.of(context).focusColor.withOpacity(0.01),
             boxShadow: [
               BoxShadow(
                   color: Theme.of(context).focusColor.withOpacity(0.1),

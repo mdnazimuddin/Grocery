@@ -8,6 +8,8 @@ import 'package:Uthbay/utilis/ProgressHUD.dart';
 import 'package:Uthbay/utilis/form_helper.dart';
 import 'package:Uthbay/utilis/validator_service.dart';
 import 'package:flutter/material.dart';
+import 'package:page_transition/page_transition.dart';
+import 'package:progress_dialog/progress_dialog.dart';
 
 class Body extends StatefulWidget {
   @override
@@ -17,6 +19,7 @@ class Body extends StatefulWidget {
 class _BodyState extends State<Body> {
   APIService apiService;
   GlobalKey<FormState> globalKey = GlobalKey<FormState>();
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   bool hidePassword = true;
   bool isApiCallProcess = false;
   String email;
@@ -39,6 +42,7 @@ class _BodyState extends State<Body> {
 
   Widget _uiSetup(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: Theme.of(context).accentColor,
       body: SingleChildScrollView(
         child: Column(
@@ -72,6 +76,10 @@ class _BodyState extends State<Body> {
                           style: Theme.of(context).textTheme.headline2,
                         ),
                         TextFormField(
+                          style: TextStyle(
+                            color: Colors.black54,
+                            fontWeight: FontWeight.normal,
+                          ),
                           keyboardType: TextInputType.text,
                           onSaved: (input) => email = input,
                           validator: (input) => !input.contains('@')
@@ -99,8 +107,7 @@ class _BodyState extends State<Body> {
                         ),
                         SizedBox(height: 20),
                         TextFormField(
-                          style:
-                              TextStyle(color: Theme.of(context).accentColor),
+                          style: TextStyle(color: Colors.black54),
                           keyboardType: TextInputType.text,
                           onSaved: (input) => password = input,
                           validator: (input) => input.length < 3
@@ -144,45 +151,40 @@ class _BodyState extends State<Body> {
                         FlatButton(
                           padding: EdgeInsets.symmetric(
                               vertical: 12, horizontal: 80),
-                          onPressed: () {
+                          onPressed: () async {
                             if (validetAndSave()) {
-                              // setState(() {
-                              //   isApiCallProcess = true;
-                              // });
+                              ProgressDialog dialog =
+                                  new ProgressDialog(context);
+                              dialog.style(message: 'Please wait...');
+                              await dialog.show();
                               apiService
                                   .loginCustomer(email, password)
-                                  .then((ret) {
+                                  .then((ret) async {
+                                await dialog.hide();
                                 if (ret) {
-                                  setState(() {
-                                    FormHelper.showMessage(
-                                      context,
-                                      "Uthbay Grocery",
-                                      "Login Successfull",
-                                      "OK",
-                                      () {
-                                        isApiCallProcess = false;
-                                        // Navigator.of(context).pop();
-                                        Navigator.pushReplacement(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    HomeScreen()));
-                                      },
-                                    );
+                                  final snackBar = SnackBar(
+                                      content: Text("Login Successfull"),
+                                      duration:
+                                          new Duration(milliseconds: 800));
+                                  _scaffoldKey.currentState
+                                      .showSnackBar(snackBar)
+                                      .closed
+                                      .then((_) {
+                                    Navigator.pushReplacement(
+                                        context,
+                                        PageTransition(
+                                            type:
+                                                PageTransitionType.rightToLeft,
+                                            child: HomeScreen()));
                                   });
                                 } else {
-                                  setState(() {
-                                    FormHelper.showMessage(
-                                      context,
-                                      "Uthbay Grocery",
-                                      "Login Faild! Please try again.",
-                                      "OK",
-                                      () {
-                                        isApiCallProcess = false;
-                                        Navigator.of(context).pop();
-                                      },
-                                    );
-                                  });
+                                  final snackBar = SnackBar(
+                                      content: Text(
+                                          "Username and Password invalid."),
+                                      duration:
+                                          new Duration(milliseconds: 1500));
+                                  _scaffoldKey.currentState
+                                      .showSnackBar(snackBar);
                                 }
                               });
                             }
@@ -206,8 +208,9 @@ class _BodyState extends State<Body> {
                               onTap: () {
                                 Navigator.push(
                                     context,
-                                    MaterialPageRoute(
-                                        builder: (context) => SignUpScreen()));
+                                    PageTransition(
+                                        type: PageTransitionType.rightToLeft,
+                                        child: SignUpScreen()));
                               },
                               child: Text("Register",
                                   style: TextStyle(

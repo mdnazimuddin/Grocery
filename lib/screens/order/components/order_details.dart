@@ -1,49 +1,48 @@
-
+import 'package:Uthbay/models/cart_response_model.dart';
+import 'package:Uthbay/models/order.dart';
 import 'package:Uthbay/models/order_detail.dart';
 import 'package:Uthbay/models/shipping_model.dart';
+import 'package:Uthbay/provider/order_provider.dart';
 import 'package:Uthbay/screens/checkout/widgets/checkpoints.dart';
+import 'package:Uthbay/screens/widgets/cart_notify.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class OrderDetailsPage extends StatefulWidget {
+  int orderId;
+  OrderDetailsPage({this.orderId});
   @override
   _OrderDetailsPageState createState() => _OrderDetailsPageState();
 }
 
 class _OrderDetailsPageState extends State<OrderDetailsPage> {
   @override
-  Widget build(BuildContext context) {
-    OrderDetailModel orderDetailModel = new OrderDetailModel();
-    orderDetailModel.orderId = 1;
-    orderDetailModel.orderDate = DateTime.parse("2020-12-19T20:38:00");
-    orderDetailModel.paymentMethod = "Paypal";
-    orderDetailModel.shipping = new Shipping();
-    orderDetailModel.shipping.address1 = "E72";
-    orderDetailModel.shipping.address2 = "Sector 62";
-    orderDetailModel.shipping.state = "UP";
-    orderDetailModel.shipping.city = "Noida";
-    orderDetailModel.shippingTotal = 15;
-    orderDetailModel.totalAmount = 1300;
+  void initState() {
+    super.initState();
 
-    orderDetailModel.lineItems = new List<LineItems>();
-
-    orderDetailModel.lineItems.add(new LineItems(
-      productId: 1,
-      productName: "Test 1",
-      quantity: 10,
-      totalAmount: 500,
-    ));
-
-    orderDetailModel.lineItems.add(new LineItems(
-      productId: 2,
-      productName: "Test 2",
-      quantity: 5,
-      totalAmount: 800,
-    ));
-
-    return orderDetailUI(orderDetailModel);
+    var orderProvider = Provider.of<OrderProvider>(context, listen: false);
+    orderProvider.fetchOrder(widget.orderId);
   }
 
-  Widget orderDetailUI(OrderDetailModel model) {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: _buildAppBar(context),
+      body: new Consumer<OrderProvider>(
+        builder: (context, orderModel, child) {
+          if (orderModel.order.id != null) {
+            return orderDetailUI(orderModel.order, context);
+          } else {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+        },
+      ),
+    );
+  }
+
+  Widget orderDetailUI(Order model, BuildContext context) {
     return SingleChildScrollView(
       padding: EdgeInsets.all(10),
       child: Column(
@@ -51,11 +50,11 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "#${model.orderId.toString()}",
+            "#${model.orderNumber.toString()}",
             style: Theme.of(context).textTheme.labelHeading,
           ),
           Text(
-            model.orderDate.toString(),
+            model.orderDate.toString() ?? '',
             style: Theme.of(context).textTheme.labelText,
           ),
           SizedBox(height: 20),
@@ -64,15 +63,15 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
             style: Theme.of(context).textTheme.labelHeading,
           ),
           Text(
-            model.shipping.address1,
+            model.shipping.address1 ?? '',
             style: Theme.of(context).textTheme.labelText,
           ),
           Text(
-            model.shipping.address2,
+            model.shipping.address2 ?? "",
             style: Theme.of(context).textTheme.labelText,
           ),
           Text(
-            "${model.shipping.city},${model.shipping.state}",
+            "${model.shipping.city ?? ''},${model.shipping.state ?? ''}",
             style: Theme.of(context).textTheme.labelText,
           ),
           SizedBox(height: 20),
@@ -81,7 +80,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
             style: Theme.of(context).textTheme.labelHeading,
           ),
           Text(
-            model.paymentMethod,
+            model.payment.paymentMethod ?? '',
             style: Theme.of(context).textTheme.labelText,
           ),
           Divider(color: Colors.grey),
@@ -94,44 +93,49 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
           Divider(color: Colors.grey),
           _listOrderItems(model),
           Divider(color: Colors.grey),
-          _itemTotal("Item Total", "${model.itemTotalAmount}",
+          _itemTotal("Item Total", "${model.itemTotal ?? ''}",
               textStyle: Theme.of(context).textTheme.itemTotalText),
-          _itemTotal("Uthbay Service Charges", "65",
+          _itemTotal("Items Taxes", model.productTax ?? '',
               textStyle: Theme.of(context).textTheme.itemTotalText),
-          _itemTotal("Shipping Charges", "${model.shippingTotal}",
+          _itemTotal("Uthbay Service Charges", model.uthbayService ?? '',
               textStyle: Theme.of(context).textTheme.itemTotalText),
-          _itemTotal("Paid", "${model.totalAmount}",
+          _itemTotal("Shipping Charges", "${model.delivery ?? ''}",
+              textStyle: Theme.of(context).textTheme.itemTotalText),
+          _itemTotal("Total (${model.payment.setPaid ? "Paid" : "Due"})",
+              "${model.totalAmount ?? ''}",
               textStyle: Theme.of(context).textTheme.itemTotalPaidText),
         ],
       ),
     );
   }
 
-  Widget _listOrderItems(OrderDetailModel model) {
+  Widget _listOrderItems(Order model) {
     return ListView.builder(
-      itemCount: model.lineItems.length,
+      itemCount: model.items.length,
       physics: ScrollPhysics(),
       shrinkWrap: true,
       itemBuilder: (contex, index) {
-        return _productItems(model.lineItems[index]);
+        return _productItems(model.items[index]);
       },
     );
   }
 
-  Widget _productItems(LineItems product) {
+  Widget _productItems(CartItem product) {
     return ListTile(
       dense: true,
       contentPadding: EdgeInsets.all(2),
       onTap: () {},
       title: new Text(
-        product.productName,
+        product.variationId == 0
+            ? product.productName
+            : "${product.productName} (${product.attributeValue} ${product.attribute})",
         style: Theme.of(context).textTheme.productItemText,
       ),
       subtitle: Padding(
         padding: EdgeInsets.all(1),
-        child: Text("Qty: ${product.quantity}"),
+        child: Text("Qty: ${product.qty ?? ''}"),
       ),
-      trailing: Text("\$ ${product.totalAmount}"),
+      trailing: Text("\$ ${product.lineTotal ?? ''}"),
     );
   }
 
@@ -145,6 +149,30 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
         style: textStyle,
       ),
       trailing: Text("\$ $value"),
+    );
+  }
+
+  Widget _buildAppBar(BuildContext context) {
+    return AppBar(
+      centerTitle: true,
+      backgroundColor: Colors.redAccent,
+      brightness: Brightness.dark,
+      elevation: 0,
+      automaticallyImplyLeading: true,
+      leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back_ios,
+            color: Colors.white,
+          ),
+          onPressed: () => Navigator.pop(context)),
+      title: Text(
+        "Order Details",
+        style: TextStyle(color: Colors.white),
+      ),
+      actions: [
+        cartNotify(context),
+        SizedBox(width: 10),
+      ],
     );
   }
 }

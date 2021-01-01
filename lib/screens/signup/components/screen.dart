@@ -1,11 +1,14 @@
 import 'package:Uthbay/models/customer.dart';
 import 'package:Uthbay/screens/home/home_screen.dart';
+import 'package:Uthbay/screens/signin/signin_screen.dart';
 import 'package:Uthbay/screens/signup/signup_screen.dart';
 import 'package:Uthbay/services/api_service.dart';
 import 'package:Uthbay/utilis/ProgressHUD.dart';
 import 'package:Uthbay/utilis/form_helper.dart';
 import 'package:Uthbay/utilis/validator_service.dart';
 import 'package:flutter/material.dart';
+import 'package:page_transition/page_transition.dart';
+import 'package:progress_dialog/progress_dialog.dart';
 
 class Body extends StatefulWidget {
   @override
@@ -16,6 +19,7 @@ class _BodyState extends State<Body> {
   APIService apiService;
   CustomerModel model;
   GlobalKey<FormState> globalKey = GlobalKey<FormState>();
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   bool hidePassword = true;
   bool isApiCallProcess = false;
 
@@ -37,6 +41,7 @@ class _BodyState extends State<Body> {
 
   Widget _uiSetup(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: Theme.of(context).accentColor,
       body: SingleChildScrollView(
         child: Column(
@@ -71,6 +76,7 @@ class _BodyState extends State<Body> {
                         ),
                         SizedBox(height: 10),
                         TextFormField(
+                          style: TextStyle(color: Colors.black54, fontSize: 14),
                           keyboardType: TextInputType.text,
                           onSaved: (input) => model.firstName = input,
                           validator: (input) => input.toString().isEmpty
@@ -84,7 +90,7 @@ class _BodyState extends State<Body> {
                             labelStyle: TextStyle(
                                 fontWeight: FontWeight.normal,
                                 fontSize: 14,
-                                color: Colors.redAccent),
+                                color: Colors.black54),
                             hintStyle: TextStyle(
                                 fontWeight: FontWeight.normal, fontSize: 14),
                             enabledBorder: UnderlineInputBorder(
@@ -103,6 +109,7 @@ class _BodyState extends State<Body> {
                         ),
                         SizedBox(height: 10),
                         TextFormField(
+                          style: TextStyle(color: Colors.black54, fontSize: 14),
                           keyboardType: TextInputType.text,
                           onSaved: (input) => model.lastName = input,
                           validator: (input) => input.toString().isEmpty
@@ -116,7 +123,7 @@ class _BodyState extends State<Body> {
                             labelStyle: TextStyle(
                                 fontWeight: FontWeight.normal,
                                 fontSize: 14,
-                                color: Colors.redAccent),
+                                color: Colors.black54),
                             hintStyle: TextStyle(
                                 fontWeight: FontWeight.normal, fontSize: 14),
                             enabledBorder: UnderlineInputBorder(
@@ -135,6 +142,7 @@ class _BodyState extends State<Body> {
                         ),
                         SizedBox(height: 10),
                         TextFormField(
+                          style: TextStyle(color: Colors.black54, fontSize: 14),
                           keyboardType: TextInputType.text,
                           onSaved: (input) => model.email = input,
                           validator: (input) {
@@ -155,7 +163,7 @@ class _BodyState extends State<Body> {
                             labelStyle: TextStyle(
                                 fontWeight: FontWeight.normal,
                                 fontSize: 14,
-                                color: Colors.redAccent),
+                                color: Colors.black54),
                             hintStyle: TextStyle(
                                 fontWeight: FontWeight.normal, fontSize: 14),
                             enabledBorder: UnderlineInputBorder(
@@ -174,16 +182,20 @@ class _BodyState extends State<Body> {
                         ),
                         SizedBox(height: 10),
                         TextFormField(
-                          style:
-                              TextStyle(color: Theme.of(context).accentColor),
+                          style: TextStyle(color: Colors.black54, fontSize: 14),
                           keyboardType: TextInputType.text,
-                          // onSaved: (input) => password = input,
+                          onSaved: (input) => model.password = input,
                           validator: (input) => input.length < 3
                               ? "Password should be more than 3 characters."
                               : null,
                           obscureText: hidePassword,
                           decoration: InputDecoration(
                             hintText: "Password",
+                            labelText: "Password ",
+                            labelStyle: TextStyle(
+                                fontWeight: FontWeight.normal,
+                                fontSize: 14,
+                                color: Colors.black54),
                             hintStyle: TextStyle(
                                 fontWeight: FontWeight.normal, fontSize: 14),
                             enabledBorder: UnderlineInputBorder(
@@ -217,8 +229,44 @@ class _BodyState extends State<Body> {
                         FlatButton(
                           padding: EdgeInsets.symmetric(
                               vertical: 12, horizontal: 80),
-                          onPressed: () {
-                            if (validetAndSave()) {}
+                          onPressed: () async {
+                            if (validetAndSave()) {
+                              print(model.toJson());
+                              ProgressDialog dialog =
+                                  new ProgressDialog(context);
+                              dialog.style(message: 'Please wait...');
+                              await dialog.show();
+                              apiService
+                                  .createCustomer(model: model)
+                                  .then((ret) async {
+                                await dialog.hide();
+                                if (ret) {
+                                  final snackBar = SnackBar(
+                                      content: Text("Registation Successfull"),
+                                      duration:
+                                          new Duration(milliseconds: 1200));
+                                  _scaffoldKey.currentState
+                                      .showSnackBar(snackBar)
+                                      .closed
+                                      .then((_) {
+                                    Navigator.pushReplacement(
+                                        context,
+                                        PageTransition(
+                                            type:
+                                                PageTransitionType.rightToLeft,
+                                            child: HomeScreen()));
+                                  });
+                                } else {
+                                  final snackBar = SnackBar(
+                                      content: Text(
+                                          "Registation Faild! Please try again."),
+                                      duration:
+                                          new Duration(milliseconds: 1200));
+                                  _scaffoldKey.currentState
+                                      .showSnackBar(snackBar);
+                                }
+                              });
+                            }
                           },
                           child: Text(
                             "Register",
@@ -237,7 +285,11 @@ class _BodyState extends State<Body> {
                             Text("Already have an account? "),
                             InkWell(
                               onTap: () {
-                                Navigator.pop(context);
+                                Navigator.push(
+                                    context,
+                                    PageTransition(
+                                        type: PageTransitionType.rightToLeft,
+                                        child: SignInScreen()));
                               },
                               child: Text("Login",
                                   style: TextStyle(

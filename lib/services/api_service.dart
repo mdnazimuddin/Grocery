@@ -1,5 +1,6 @@
 import 'package:Uthbay/models/cart_request_model.dart';
 import 'package:Uthbay/models/cart_response_model.dart';
+import 'package:Uthbay/models/credit_card_model.dart';
 import 'package:Uthbay/models/customer.dart';
 import 'package:Uthbay/models/customer_address.dart';
 import 'package:Uthbay/models/customer_details.dart';
@@ -8,7 +9,12 @@ import 'package:Uthbay/models/grocery.dart';
 import 'package:Uthbay/models/grocery_list.dart';
 import 'package:Uthbay/models/login_model.dart';
 import 'package:Uthbay/models/order.dart';
+import 'package:Uthbay/models/order_model.dart';
+import 'package:Uthbay/models/order_tax.dart';
+import 'package:Uthbay/models/payment_system.dart';
+import 'package:Uthbay/models/pickup_model.dart';
 import 'package:Uthbay/models/product.dart';
+import 'package:Uthbay/models/stripe_model.dart';
 import 'package:Uthbay/models/tag.dart';
 import 'package:Uthbay/models/variable_product.dart';
 import 'package:Uthbay/utilis/config.dart';
@@ -28,17 +34,19 @@ class APIService {
       );
       if (response.statusCode == 200) {
         ret = true;
-        var token = "Bearer " + response.data['data']['token'].toString();
+        var token = "Bearer " + response.data['success']['token'].toString();
         print(token);
         prefs.setString('token', token);
-        prefs.setString('id', response.data['data']['id'].toString());
+        prefs.setString('id', response.data['success']['id'].toString());
         prefs.setString(
-            'first_name', response.data['data']['first_name'].toString());
+            'first_name', response.data['success']['first_name'].toString());
         prefs.setString(
-            'last_name', response.data['data']['last_name'].toString());
-        prefs.setString('email', response.data['data']['email'].toString());
-        prefs.setString('img_src', response.data['data']['img_src'].toString());
+            'last_name', response.data['success']['last_name'].toString());
+        prefs.setString('email', response.data['success']['email'].toString());
+        prefs.setString(
+            'img_src', response.data['success']['img_src'].toString());
         prefs.setBool('login', true);
+        prefs.setBool('install', true);
       }
     } on DioError catch (e) {
       print(e);
@@ -68,17 +76,19 @@ class APIService {
       );
       if (response.statusCode == 200) {
         ret = true;
-        var token = "Bearer " + response.data['data']['token'].toString();
+        var token = "Bearer " + response.data['success']['token'].toString();
         print(token);
         prefs.setString('token', token);
-        prefs.setString('id', response.data['data']['id'].toString());
+        prefs.setString('id', response.data['success']['id'].toString());
         prefs.setString(
-            'first_name', response.data['data']['first_name'].toString());
+            'first_name', response.data['success']['first_name'].toString());
         prefs.setString(
-            'last_name', response.data['data']['last_name'].toString());
-        prefs.setString('email', response.data['data']['email'].toString());
-        prefs.setString('img_src', response.data['data']['img_src'].toString());
+            'last_name', response.data['success']['last_name'].toString());
+        prefs.setString('email', response.data['success']['email'].toString());
+        prefs.setString(
+            'img_src', response.data['success']['img_src'].toString());
         prefs.setBool('login', true);
+        prefs.setBool('install', true);
       }
     } on DioError catch (e) {
       print(e.message);
@@ -88,14 +98,16 @@ class APIService {
         ret = false;
       }
     }
-
+    await getAddress();
     return ret;
   }
 
   Future<bool> logoutCustomer() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    print(prefs.getString('token'));
     bool ret = false;
     try {
+      print(Config.customerURL + 'logout');
       var response = await Dio().post(
         Config.customerURL + 'logout',
         options: new Options(headers: {
@@ -103,13 +115,13 @@ class APIService {
           'Authorization': prefs.getString('token'),
         }),
       );
-      print(response);
+      print(response.statusCode);
       if (response.statusCode == 200) {
         ret = true;
         prefs.setString('token', null);
         prefs.setString('id', null);
-        // prefs.setString('first_name', null);
-        // prefs.setString('last_name', null);
+        prefs.setString('first_name', null);
+        prefs.setString('last_name', null);
         prefs.setString('email', null);
         prefs.setString('img_src', null);
         prefs.setStringList('address', null);
@@ -140,9 +152,9 @@ class APIService {
         }),
         data: address.toJson(),
       );
-
+      print(response.data);
       if (response.statusCode == 200) {
-        List<String> addressList = [
+        List<String> address = [
           response.data['data']['address_1'],
           response.data['data']['address_2'],
           response.data['data']['city'],
@@ -152,8 +164,9 @@ class APIService {
           response.data['data']['latitude'],
           response.data['data']['longitude']
         ];
-        print(addressList);
-        prefs.setStringList('address', addressList);
+        print(address);
+
+        prefs.setStringList('address', address);
         ret = true;
       }
     } on DioError catch (e) {
@@ -167,7 +180,6 @@ class APIService {
   Future<CustomerAddress> updateAddress(CustomerAddress address) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     CustomerAddress customerAddress = new CustomerAddress();
-    bool ret = false;
     try {
       var response = await Dio().post(
         Config.customerURL + 'address',
@@ -192,12 +204,12 @@ class APIService {
         prefs.setStringList('address', address);
         var cust = CustomerAddress().toMap(address);
 
-        print(cust['state']);
+        print(cust['city']);
       }
     } on DioError catch (e) {
       print(e.message);
     }
-
+    print("Call Address func");
     return customerAddress;
   }
 
@@ -237,22 +249,33 @@ class APIService {
     return customerAddress;
   }
 
-  Future<List<GroceryList>> getGroceriesList() async {
+  Future<List<GroceryList>> getGroceriesList(
+      {String location, int pageNumber, String strSerach}) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     List<GroceryList> groceriesList = new List<GroceryList>();
+
     try {
-      var response = await Dio().post(
-        Config.customerURL + 'groceries',
-        options: new Options(headers: {
-          'Accept': 'application/json',
-          'Authorization': prefs.getString('token'),
-        }),
-      );
-      if (response.statusCode == 200) {
+      String parameter = "";
+      if (location != null) {
+        parameter += "&location=${location.toString()}";
+      }
+      if (strSerach != null) {
+        parameter += "&search=${strSerach.toString()}";
+      }
+      if (pageNumber != null) {
+        parameter += "&page=${pageNumber.toString()}";
+      }
+      var groceriesURL = Config.groceryListURL + parameter.toString();
+      print(groceriesURL);
+      var response = await Dio().get(groceriesURL);
+      print(response.data.isNotEmpty);
+      if (response.statusCode == 200 && response.data.isNotEmpty) {
         for (var item in response.data['data']) {
-          GroceryList groceries = GroceryList.fromJson(item);
-          groceriesList.add(groceries);
+          GroceryList _groceries = GroceryList.fromJson(item);
+          groceriesList.add(_groceries);
         }
+      } else {
+        return [];
       }
     } on DioError catch (e) {
       print(e.message);
@@ -384,7 +407,7 @@ class APIService {
       var productUrl = Config.productURL + parameter.toString();
       print(productUrl);
       var response = await Dio().get(productUrl);
-      // print(response.data['data']);
+      // print(response.data['data']['type']);
       if (response.statusCode == 200) {
         for (dynamic item in response.data['data']) {
           Product _product = Product.fromJson(item);
@@ -513,7 +536,7 @@ class APIService {
       print(e.message);
     }
 
-    print(responseModel.data);
+    // print(responseModel.data[0].productId);
     return responseModel;
   }
 
@@ -537,7 +560,7 @@ class APIService {
         }),
         data: data,
       );
-      print(response);
+      print(response.data);
       if (response.statusCode == 200) {
         responseModel = CartResponseModel.fromJson(response.data);
       }
@@ -574,46 +597,116 @@ class APIService {
     return responseModel;
   }
 
-  Future<bool> createOrder(Order model) async {
+  Future<PickupModel> fetchPickup(String groceryId) async {
+    PickupModel responseModel;
+    try {
+      var url = Config.url + groceryId + '/' + Config.pickupURL;
+
+      print(url);
+      var response = await Dio().get(url);
+      print("Call");
+      print(response.data);
+      if (response.statusCode == 200) {
+        responseModel = PickupModel.fromJson(response.data['data']);
+      }
+    } on DioError catch (e) {
+      print(e.message);
+    }
+
+    return responseModel;
+  }
+
+  Future<OrderTax> fetchOrderTax(String groceryId) async {
+    OrderTax responseModel;
+    try {
+      var url = Config.url + groceryId + '/' + Config.orderTaxURL;
+
+      print(url);
+      var response = await Dio().get(url);
+      // print("Call");
+      print(response.data);
+      if (response.statusCode == 200) {
+        responseModel = OrderTax.fromJson(response.data['data']);
+      }
+    } on DioError catch (e) {
+      print(e.message);
+    }
+
+    return responseModel;
+  }
+
+  Future<PaymentSystem> fetchPaymentSystem(String groceryId) async {
+    PaymentSystem responseModel;
+    try {
+      var url = Config.url + groceryId + '/' + Config.paymentSystem;
+
+      print(url);
+      var response = await Dio().get(url);
+      print("Call");
+      print(response.data);
+      if (response.statusCode == 200) {
+        responseModel = PaymentSystem.fromJson(response.data['data']);
+      }
+    } on DioError catch (e) {
+      print(e.message);
+    }
+
+    return responseModel;
+  }
+
+  Future<StripeAccount> fetchStripeAccount(String groceryId) async {
+    StripeAccount responseModel;
+    try {
+      var url = Config.url + groceryId + '/' + Config.stripeURL;
+
+      print(url);
+      var response = await Dio().get(url);
+      print("Call");
+      print(response.data);
+      if (response.statusCode == 200) {
+        responseModel = StripeAccount.fromJson(response.data['data']);
+      }
+    } on DioError catch (e) {
+      print(e.message);
+    }
+
+    return responseModel;
+  }
+
+  Future<bool> savecreditCard(CreditCardModel model) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    bool isOrderCreated = false;
+    bool isOrderCreated;
     print(model.toJson());
-    // try {
-    //   var url = Config.customerURL + Config.cartURL;
-    //   Map<String, dynamic> data = {
-    //     'grocery_id': 2,
-    //     'customer_id': prefs.getString('id')
-    //   };
-    //   print(data);
-    //   print(Config.customerURL + Config.orderURL);
-    //   var response = await Dio().post(
-    //     Config.customerURL + Config.cartURL,
-    //     options: new Options(headers: {
-    //       'Accept': 'application/json',
-    //       'Authorization': prefs.getString('token'),
-    //     }),
-    //     data: model.toJson(),
-    //   );
-    //   print(response);
-    //   if (response.statusCode == 200) {
-    //     isOrderCreated = true;
-    //   }
-    // } on DioError catch (e) {
-    //   print(e.message);
-    //   isOrderCreated = false;
-    // }
+    try {
+      var url = Config.customerURL + Config.saveCardURL;
+      print(url);
+      var response = await Dio().post(
+        url,
+        options: new Options(headers: {
+          'Accept': 'application/json',
+          'Authorization': prefs.getString('token'),
+        }),
+        data: model.toJson(),
+      );
+      print(response.data);
+      if (response.statusCode == 200) {
+        isOrderCreated = true;
+      }
+    } on DioError catch (e) {
+      print(e.message);
+      isOrderCreated = false;
+    }
 
     return isOrderCreated;
   }
 
-  Future<List<Order>> getOrders() async {
-    List<Order> data = new List<Order>();
+  Future<List<CreditCardModel>> fetchcreditCard() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<CreditCardModel> creditCards = new List<CreditCardModel>();
 
     try {
-      var url = Config.customerURL + Config.cartURL;
-
-      print(Config.customerURL + Config.orderURL);
+      var url = Config.customerURL + Config.saveCardURL;
+      print(url);
       var response = await Dio().post(
         url,
         options: new Options(headers: {
@@ -621,14 +714,107 @@ class APIService {
           'Authorization': prefs.getString('token'),
         }),
       );
-      print(response);
+      print(response.data);
       if (response.statusCode == 200) {
-        data = (response.data as List).map((i) => Order.fromJson(i)).toList();
+        for (dynamic item in response.data['data']) {
+          CreditCardModel _card = CreditCardModel.fromJson(item);
+          creditCards.add(_card);
+        }
       }
     } on DioError catch (e) {
       print(e.message);
     }
 
-    return data;
+    return creditCards;
+  }
+
+  Future<bool> createOrder(Order model) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool isOrderCreated = false;
+    print(model.toJson());
+    try {
+      var url = Config.customerURL + Config.createOrderURL;
+      print(url);
+      var response = await Dio().post(
+        url,
+        options: new Options(headers: {
+          'Accept': 'application/json',
+          'Authorization': prefs.getString('token'),
+        }),
+        data: model.toJson(),
+      );
+      print(response.data);
+      if (response.statusCode == 200) {
+        isOrderCreated = true;
+      }
+    } on DioError catch (e) {
+      print(e.message);
+      isOrderCreated = false;
+    }
+
+    return isOrderCreated;
+  }
+
+  Future<List<OrderModel>> getOrders(String groceryId) async {
+    List<OrderModel> orders = new List<OrderModel>();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    Map<String, dynamic> data = {
+      'customer_id': prefs.getString('id'),
+      'grocery_id': groceryId,
+    };
+    try {
+      var url = Config.customerURL + Config.orderListURL;
+
+      print(url);
+      var response = await Dio().post(
+        url,
+        options: new Options(headers: {
+          'Accept': 'application/json',
+          'Authorization': prefs.getString('token'),
+        }),
+        data: data,
+      );
+      print(response);
+      if (response.statusCode == 200) {
+        for (dynamic item in response.data['data']) {
+          OrderModel _order = OrderModel.fromJson(item);
+          orders.add(_order);
+        }
+      }
+    } on DioError catch (e) {
+      print(e.message);
+    }
+
+    return orders;
+  }
+
+  Future<Order> getOrder(int orderId) async {
+    Order order = new Order();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    Map<String, dynamic> data = {
+      'orderId': orderId,
+    };
+    try {
+      var url = Config.customerURL + Config.orderURL;
+
+      print(url);
+      var response = await Dio().post(
+        url,
+        options: new Options(headers: {
+          'Accept': 'application/json',
+          'Authorization': prefs.getString('token'),
+        }),
+        data: data,
+      );
+      print(response);
+      if (response.statusCode == 200) {
+        order = Order.fromJson(response.data['data']);
+        print(order.id);
+      }
+    } on DioError catch (e) {
+      print(e.message);
+    }
+
+    return order;
   }
 }

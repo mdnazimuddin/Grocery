@@ -129,7 +129,7 @@ class ProductDetailsWidget extends StatelessWidget {
                               data.variableProduct != null
                                   ? int.parse(data.variableProduct.id)
                                   : 0;
-                          print("Var: ${cartProducts.variationId}");
+                          print("groceryID: ${data.groceryID}");
                           cartProvider.addToCart(
                             int.parse(data.groceryID),
                             cartProducts,

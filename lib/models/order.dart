@@ -54,7 +54,7 @@ class Order {
     firstName = json['first_name'];
     lastName = json['last_name'];
     orderNumber = json['order_number'];
-    orderDate = DateTime.parse(json['created_at']);
+    orderDate = DateTime.parse(json['order_date']);
     itemTotal = json['item_total'];
     productTax = json['product_tax'];
     delivery = json['delivery'];
@@ -62,14 +62,19 @@ class Order {
     totalAmount = json['total_amount'];
     status = json['status'];
     pickup = json['pickup'];
-    shipping = json['shipping'];
-    billing = json['billing'];
-    payment = json['payment'];
+    shipping =
+        json['shipping'] != null ? Shipping.fromJson(json['shipping']) : null;
+    billing =
+        json['billing'] != null ? Billing.fromJson(json['billing']) : null;
+    payment =
+        json['payment'] != null ? Payment.fromJson(json['payment']) : null;
+
     if (json['items'] != null) {
       items = new List<CartItem>();
-      json['items'].forEach((v) {
-        items.add(new CartItem.fromJson(v));
-      });
+      for (var item in json['items']) {
+        print(item);
+        items.add(new CartItem.fromJson(item));
+      }
     }
   }
   Map<String, dynamic> toJson() {
@@ -95,6 +100,7 @@ class Order {
     if (items != null) {
       data['items'] = items.map((v) => v.toJson()).toList();
     }
+
     return data;
   }
 }
@@ -160,29 +166,25 @@ class Billing {
   });
 
   Billing.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    firstName = json['first_name'];
-    lastName = json['last_name'];
     company = json['company'];
     address1 = json['address_1'];
     address2 = json['address_2'];
     city = json['city'];
     country = json['country'];
     state = json['state'];
+    postcode = json['zip'];
     email = json['email'];
     phone = json['phone'];
   }
   Map<String, dynamic> tojson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['first_name'] = this.firstName;
-    data['last_name'] = this.lastName;
     data['company'] = this.company;
-    data['address1'] = this.address1;
-    data['address2'] = this.address2;
+    data['address_1'] = this.address1;
+    data['address_2'] = this.address2;
     data['city'] = this.city;
     data['country'] = this.country;
     data['state'] = this.state;
+    data['zip'] = this.postcode;
     data['email'] = this.email;
     data['phone'] = this.phone;
     return data;

@@ -1,6 +1,7 @@
 import 'package:Uthbay/screens/home/home_screen.dart';
 import 'package:Uthbay/screens/signin/signin_screen.dart';
 import 'package:Uthbay/screens/signup/signup_screen.dart';
+import 'package:Uthbay/screens/splash/components/base.dart';
 import 'package:Uthbay/screens/splash/components/intro.dart';
 import 'package:animated_splash_screen/animated_splash_screen.dart';
 import 'package:flutter/material.dart';
@@ -14,15 +15,18 @@ class Body extends StatefulWidget {
 
 class _BodyState extends State<Body> {
   bool login;
+  bool install;
   init() async {
     SharedPreferences sp = await SharedPreferences.getInstance();
     // user status
+    bool _install = sp.getBool('install') ?? false;
     bool _login = sp.getBool('login') ?? false;
 
     setState(() {
       this.login = _login;
+      this.install = _install;
     });
-    print("New Install: ${login}");
+    print("Install: ${_install}");
   }
 
   @override
@@ -46,7 +50,11 @@ class _BodyState extends State<Body> {
           if (login) {
             return HomeScreen();
           } else {
-            return IntroScreen();
+            if (install) {
+              return BasePage();
+            } else {
+              return IntroScreen();
+            }
           }
         },
         splashTransition: SplashTransition.scaleTransition,

@@ -1,40 +1,43 @@
+import 'package:Uthbay/models/grocery_list.dart';
 import 'package:Uthbay/provider/cart_provider.dart';
+import 'package:Uthbay/provider/grocery_provider.dart';
 import 'package:Uthbay/provider/loader_provider.dart';
 import 'package:Uthbay/screens/checkout/components/pickpu.dart';
 import 'package:Uthbay/screens/product/widgets/cart_product.dart';
+import 'package:Uthbay/screens/widgets/cart_notify.dart';
 import 'package:Uthbay/utilis/ProgressHUD.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
 
 class CartPage extends StatefulWidget {
-  final String groceryId;
-  CartPage({this.groceryId});
   @override
   _CartPageState createState() => _CartPageState();
 }
 
 class _CartPageState extends State<CartPage> {
+  GroceryList grocery;
   @override
   initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() {
+        grocery = Provider.of<GroceryProvider>(context, listen: false).grocery;
+      });
       var cartItemList = Provider.of<CartProvider>(context, listen: false);
       cartItemList.resetStreams();
-      cartItemList.fetchCartItems(int.parse(widget.groceryId));
+      cartItemList.fetchCartItems(int.parse(grocery.id));
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<LoaderProvider>(builder: (context, loaderModel, child) {
-      return Scaffold(
-          body: ProgressHUD(
-        child: _cartItemsList(),
-        inAsyncCall: loaderModel.isApiCallProcess,
-        opacity: 0.3,
-      ));
-    });
+    return Scaffold(
+      appBar: _buildAppBar(context),
+      body: _cartItemsList(),
+    );
+
     // return CartProduct(data: cartItem);
   }
 
@@ -62,7 +65,7 @@ class _CartPageState extends State<CartPage> {
                         print(cartModel.cartItems[index]);
                         return CartProduct(
                           data: cartModel.cartItems[index],
-                          groceryId: widget.groceryId,
+                          groceryId: grocery.id,
                         );
                       },
                     ),
@@ -150,9 +153,9 @@ class _CartPageState extends State<CartPage> {
                         onPressed: () {
                           Navigator.push(
                               context,
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                      PickupPage(groceryId: widget.groceryId)));
+                              PageTransition(
+                                  type: PageTransitionType.rightToLeft,
+                                  child: PickupPage()));
                         },
                         padding: EdgeInsets.all(15),
                         color: Colors.redAccent,
@@ -164,10 +167,41 @@ class _CartPageState extends State<CartPage> {
               ),
             ],
           );
+        } else if (cartModel.dataNotFound) {
+          print(cartModel.dataNotFound);
+          return Center(
+            child: Container(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [Text("Cart items not found")],
+              ),
+            ),
+          );
         } else {
           return Center(child: CircularProgressIndicator());
         }
       },
+    );
+  }
+
+  Widget _buildAppBar(BuildContext context) {
+    return AppBar(
+      centerTitle: true,
+      backgroundColor: Colors.redAccent,
+      brightness: Brightness.dark,
+      elevation: 0,
+      automaticallyImplyLeading: true,
+      title: Text(
+        this.grocery.name.toString(),
+        style: TextStyle(color: Colors.white),
+      ),
+      leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back_ios,
+            color: Colors.white,
+          ),
+          onPressed: () => Navigator.pop(context)),
     );
   }
 }

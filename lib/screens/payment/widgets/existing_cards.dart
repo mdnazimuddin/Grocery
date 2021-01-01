@@ -1,6 +1,11 @@
+import 'package:Uthbay/models/order.dart';
+import 'package:Uthbay/provider/cart_provider.dart';
+import 'package:Uthbay/screens/checkout/components/order_success.dart';
 import 'package:Uthbay/services/payment_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_credit_card/credit_card_widget.dart';
+import 'package:page_transition/page_transition.dart';
+import 'package:provider/provider.dart';
 import 'package:stripe_payment/stripe_payment.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 
@@ -30,6 +35,10 @@ class ExistingCardsPageState extends State<ExistingCardsPage> {
   ];
 
   payViaExistingCard(BuildContext context, card) async {
+    var cart = Provider.of<CartProvider>(context, listen: false);
+    String total =
+        ((double.parse(cart.orderModel.totalAmount) * 100).toInt()).toString();
+    print(total);
     ProgressDialog dialog = new ProgressDialog(context);
     dialog.style(message: 'Please wait...');
     await dialog.show();
@@ -40,17 +49,40 @@ class ExistingCardsPageState extends State<ExistingCardsPage> {
       expYear: int.parse(expiryArr[1]),
     );
     var response = await StripeService.payViaExistingCard(
-        amount: '2500', currency: 'USD', card: stripeCard);
+        amount: total, currency: 'USD', card: stripeCard);
     await dialog.hide();
-    Scaffold.of(context)
-        .showSnackBar(SnackBar(
-          content: Text(response.message),
-          duration: new Duration(milliseconds: 1200),
-        ))
-        .closed
-        .then((_) {
-      Navigator.pop(context);
-    });
+    if (response.success) {
+      cart.orderModel.payment = Payment();
+      cart.orderModel.payment.paymentMethod = response.brand;
+      cart.orderModel.payment.paymentMethodTitle = 'Stripe';
+      cart.orderModel.payment.setPaid = true;
+      cart.orderModel.payment.transactionId = response.transactionId;
+
+      cart.orderModel.status = 'pending';
+
+      Scaffold.of(context)
+          .showSnackBar(SnackBar(
+            content: Text(response.message),
+            duration: new Duration(milliseconds: 800),
+          ))
+          .closed
+          .then((_) {
+        Navigator.pushReplacement(
+            context,
+            PageTransition(
+                type: PageTransitionType.rightToLeft, child: OrderSuccess()));
+      });
+    } else {
+      Scaffold.of(context)
+          .showSnackBar(SnackBar(
+            content: Text(response.message),
+            duration: new Duration(milliseconds: 1200),
+          ))
+          .closed
+          .then((_) {
+        Navigator.pop(context);
+      });
+    }
   }
 
   @override

@@ -2,9 +2,12 @@ import 'package:Uthbay/models/customer_details.dart';
 import 'package:Uthbay/models/customer_details_model.dart';
 import 'package:Uthbay/models/pickup_model.dart';
 import 'package:Uthbay/provider/cart_provider.dart';
+import 'package:Uthbay/provider/grocery_provider.dart';
 import 'package:Uthbay/screens/checkout/checkout_base.dart';
 import 'package:Uthbay/screens/checkout/components/verify_address.dart';
+import 'package:Uthbay/screens/checkout/components/verify_phone.dart';
 import 'package:flutter/material.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
 
 class PickupPage extends CheckoutBasePage {
@@ -21,7 +24,8 @@ class _PickupPageState extends CheckoutBasePageState<PickupPage> {
     super.initState();
     currentPage = 0;
     var cartProvider = Provider.of<CartProvider>(context, listen: false);
-    cartProvider.fetchPickup();
+    var grocery = Provider.of<GroceryProvider>(context, listen: false).grocery;
+    cartProvider.fetchPickup(grocery.id);
   }
 
   @override
@@ -51,8 +55,14 @@ class _PickupPageState extends CheckoutBasePageState<PickupPage> {
               padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
               child: InkWell(
                 onTap: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => VerifyAddress()));
+                  var cartProvider =
+                      Provider.of<CartProvider>(context, listen: false);
+                  cartProvider.orderModel.pickup = "Online Order";
+                  Navigator.push(
+                      context,
+                      PageTransition(
+                          type: PageTransitionType.rightToLeft,
+                          child: VerifyAddress()));
                 },
                 child: Card(
                   elevation: 5,
@@ -81,7 +91,17 @@ class _PickupPageState extends CheckoutBasePageState<PickupPage> {
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
               child: InkWell(
-                onTap: () {},
+                onTap: () {
+                  var cartProvider =
+                      Provider.of<CartProvider>(context, listen: false);
+                  cartProvider.orderModel.pickup = "Self-Pickup";
+
+                  Navigator.push(
+                      context,
+                      PageTransition(
+                          type: PageTransitionType.rightToLeft,
+                          child: VerifyPhone()));
+                },
                 child: Card(
                   elevation: 5,
                   child: Container(

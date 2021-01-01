@@ -21,56 +21,60 @@ class IntroScreen extends StatelessWidget {
           title: "First delivery",
           bodyWidget: Text(
             "We deliver your groceries in first delivery",
+            textAlign: TextAlign.center,
             style: TextStyle(
                 color: Colors.redAccent, fontWeight: FontWeight.normal),
           ),
-          footer: Text(
-            "UTHBAY GROCERY",
-            style:
-                TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
-          ),
+          // footer: Text(
+          //   "UTHBAY GROCERY",
+          //   style:
+          //       TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
+          // ),
           decoration: pageDecoration),
       PageViewModel(
           image: Image.asset("assets/images/groceries.png"),
           title: "Select your favorite store",
           bodyWidget: Text(
             "Choose from thousands of products from your favorite stores.",
+            textAlign: TextAlign.center,
             style: TextStyle(
                 color: Colors.redAccent, fontWeight: FontWeight.normal),
           ),
-          footer: Text(
-            "UTHBAY GROCERY",
-            style:
-                TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
-          ),
+          // footer: Text(
+          //   "UTHBAY GROCERY",
+          //   style:
+          //       TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
+          // ),
           decoration: pageDecoration),
       PageViewModel(
           image: Image.asset("assets/images/time_management.png"),
           title: "Save Time",
           bodyWidget: Text(
             "Let us take care of your groceries so you have more time for the thimgs you love",
+            textAlign: TextAlign.center,
             style: TextStyle(
                 color: Colors.redAccent, fontWeight: FontWeight.normal),
           ),
-          footer: Text(
-            "UTHBAY GROCERY",
-            style:
-                TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
-          ),
+          // footer: Text(
+          //   "UTHBAY GROCERY",
+          //   style:
+          //       TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
+          // ),
           decoration: pageDecoration),
       PageViewModel(
           image: Image.asset("assets/images/shopping_app.png"),
           title: "Your personal Shopper",
           bodyWidget: Text(
             "Your Shopper picks with pride and will call you before leaving the store to make sure your order is perfect.",
+            textAlign: TextAlign.center,
             style: TextStyle(
                 color: Colors.redAccent, fontWeight: FontWeight.normal),
           ),
-          footer: Text(
-            "UTHBAY GROCERY",
-            style:
-                TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
-          ),
+          // footer: Text(
+          //   "UTHBAY GROCERY",
+          //   style:
+          //       TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
+          // ),
           decoration: pageDecoration),
     ];
   }

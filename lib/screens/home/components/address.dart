@@ -1,11 +1,13 @@
 import 'dart:ui';
 
 import 'package:Uthbay/models/customer_address.dart';
+import 'package:Uthbay/screens/home/home_screen.dart';
 import 'package:Uthbay/services/api_service.dart';
 import 'package:Uthbay/utilis/ProgressHUD.dart';
 import 'package:Uthbay/utilis/form_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Address extends StatefulWidget {
@@ -18,6 +20,7 @@ class Address extends StatefulWidget {
 class _AddressState extends State<Address> {
   APIService apiService;
   GlobalKey<FormState> globalKey = GlobalKey<FormState>();
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   bool isApiCallProcess = false;
   CustomerAddress address;
   String address_1;
@@ -117,6 +120,7 @@ class _AddressState extends State<Address> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
         title: Text(this.isUpdate ? "Change Address" : "New Address"),
         elevation: 5,
@@ -308,19 +312,24 @@ class _AddressState extends State<Address> {
                   print(address.address_1);
                   apiService.createAddress(address).then((ret) {
                     if (ret) {
-                      Navigator.pop(context, true);
-                    } else {
-                      setState(() {
-                        FormHelper.showMessage(
-                          context,
-                          "Uthbay Grocery",
-                          "Address Save Faild! Please try again.",
-                          "OK",
-                          () {
-                            Navigator.of(context).pop();
-                          },
-                        );
+                      final snackBar = SnackBar(
+                          content: Text("Address Save Successfull"),
+                          duration: new Duration(milliseconds: 500));
+                      _scaffoldKey.currentState
+                          .showSnackBar(snackBar)
+                          .closed
+                          .then((_) {
+                        Navigator.pushReplacement(
+                            context,
+                            PageTransition(
+                                type: PageTransitionType.rightToLeft,
+                                child: HomeScreen()));
                       });
+                    } else {
+                      final snackBar = SnackBar(
+                          content: Text("Sorry! Address Save Faild"),
+                          duration: new Duration(milliseconds: 1200));
+                      _scaffoldKey.currentState.showSnackBar(snackBar);
                     }
                   });
                 }

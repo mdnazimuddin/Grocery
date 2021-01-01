@@ -1,6 +1,7 @@
 import 'package:Uthbay/models/grocery.dart';
 import 'package:Uthbay/models/grocery_list.dart';
 import 'package:Uthbay/models/tag.dart';
+import 'package:Uthbay/provider/grocery_provider.dart';
 import 'package:Uthbay/screens/shop/widgets/shop_categories.dart';
 import 'package:Uthbay/screens/shop/widgets/shop_product.dart';
 import 'package:Uthbay/services/api_service.dart';
@@ -8,6 +9,7 @@ import 'package:flutter_carousel_slider/carousel_slider.dart';
 import 'package:flutter_carousel_slider/carousel_slider_indicators.dart';
 import 'package:flutter_carousel_slider/carousel_slider_transforms.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class DashboardScreen extends StatefulWidget {
   final GroceryList grocery;
@@ -19,12 +21,15 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   _DashboardScreenState();
   APIService apiService;
-
+  GroceryList grocery;
   @override
   void initState() {
     // WidgetsBinding.instance.addPostFrameCallback(_onLayoutDone);
     super.initState();
     apiService = new APIService();
+    setState(() {
+      grocery = Provider.of<GroceryProvider>(context, listen: false).grocery;
+    });
   }
 
   @override
@@ -35,7 +40,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         child: ListView(
           children: [
             imageCarousel(context),
-            WidgetCategory(widget.grocery.href.link),
+            WidgetCategory(grocery.href.link),
             _tagList(context)
           ],
         ),
@@ -48,7 +53,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       width: MediaQuery.of(context).size.width,
       height: 220.0,
       child: FutureBuilder<Object>(
-          future: apiService.getGroceryImages(widget.grocery.href.link),
+          future: apiService.getGroceryImages(grocery.href.link),
           builder: (context, snapshot) {
             if (!snapshot.hasData)
               return Center(
@@ -81,7 +86,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _tagList(BuildContext context) {
     return FutureBuilder(
-      future: apiService.getTags(this.widget.grocery.href.link),
+      future: apiService.getTags(this.grocery.href.link),
       builder: (BuildContext context, snapshot) {
         if (!snapshot.hasData)
           return Center(

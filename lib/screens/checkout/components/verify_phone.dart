@@ -6,6 +6,7 @@ import 'package:Uthbay/screens/checkout/checkout_base.dart';
 import 'package:Uthbay/screens/checkout/components/checkout_order.dart';
 import 'package:Uthbay/utilis/form_helper.dart';
 import 'package:flutter/material.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
 
 class VerifyPhone extends CheckoutBasePage {
@@ -70,10 +71,12 @@ class _VerifyPhoneState extends CheckoutBasePageState<VerifyPhone> {
                         var cartProvider =
                             Provider.of<CartProvider>(context, listen: false);
                         cartProvider.setShippingMobile(model.phone);
+
                         Navigator.push(
                             context,
-                            MaterialPageRoute(
-                                builder: (context) => CheckoutOrder()));
+                            PageTransition(
+                                type: PageTransitionType.rightToLeft,
+                                child: CheckoutOrder()));
                       }
                     },
                     fullWidth: true,

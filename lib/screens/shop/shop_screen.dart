@@ -1,27 +1,30 @@
-import 'dart:ui';
-
 import 'package:Uthbay/models/grocery_list.dart';
 import 'package:Uthbay/provider/cart_provider.dart';
 import 'package:Uthbay/provider/cart_provider.dart';
+import 'package:Uthbay/provider/grocery_provider.dart';
 import 'package:Uthbay/screens/order/components/order_details.dart';
 import 'package:Uthbay/screens/order/orders_page.dart';
 import 'package:Uthbay/screens/payment/payment_screen.dart';
 import 'package:Uthbay/screens/product/cart/cart_page.dart';
+import 'package:Uthbay/screens/shop/components/customer_profile.dart';
+import 'package:bubble_bottom_bar/bubble_bottom_bar.dart';
+import 'package:Uthbay/screens/widgets/cart_notify.dart';
 import 'package:Uthbay/utilis/cart_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'components/dashboard_screen.dart';
+import 'components/favourite_screen.dart';
 
 class ShopScreen extends StatefulWidget {
   final GroceryList grocery;
-  ShopScreen({@required this.grocery});
+  ShopScreen({this.grocery});
   @override
   _ShopScreenState createState() => _ShopScreenState();
 }
 
 class _ShopScreenState extends State<ShopScreen> {
-  _ShopScreenState();
+  GroceryList grocery;
   int _index = 0;
   // List<Widget> _widgetList = [
   //   DashboardScreen(url),
@@ -33,48 +36,107 @@ class _ShopScreenState extends State<ShopScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    setState(() {
+      grocery = Provider.of<GroceryProvider>(context, listen: false).grocery;
+      cartProcider();
+    });
+  }
+
+  cartProcider() {
+    var cartProvider = Provider.of<CartProvider>(context, listen: false);
+    cartProvider.fetchCartItems(int.parse(grocery.id));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: _buildAppBar(),
-      bottomNavigationBar: BottomNavigationBar(
-        items: [
-          BottomNavigationBarItem(icon: Icon(CartIcons.home), label: "Store"),
-          BottomNavigationBarItem(
-              icon: Icon(CartIcons.favourites), label: "Favourite"),
-          BottomNavigationBarItem(icon: Icon(CartIcons.cart), label: "Order"),
-          BottomNavigationBarItem(
-              icon: Icon(CartIcons.account), label: "Account")
-        ],
-        selectedItemColor: Colors.redAccent,
-        unselectedItemColor: Colors.black,
-        type: BottomNavigationBarType.shifting,
+      appBar: _buildAppBar(context),
+      floatingActionButton:
+          FloatingActionButton(onPressed: () {}, child: Icon(CartIcons.search)),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
+      bottomNavigationBar: BubbleBottomBar(
+        opacity: .2,
         currentIndex: _index,
         onTap: (index) {
           setState(() {
             _index = index;
           });
         },
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        elevation: 10,
+        fabLocation: BubbleBottomBarFabLocation.end, //new
+        hasNotch: true, //new
+        hasInk: true, //new, gives a cute ink effect
+        inkColor: Colors.black12, //optional, uses theme color if not specified
+        items: <BubbleBottomBarItem>[
+          BubbleBottomBarItem(
+              backgroundColor: Colors.red,
+              icon: Icon(
+                CartIcons.home,
+                color: Colors.black,
+              ),
+              activeIcon: Icon(
+                CartIcons.home,
+                color: Colors.redAccent,
+              ),
+              title: Text("Store")),
+          BubbleBottomBarItem(
+              backgroundColor: Colors.red,
+              icon: Icon(
+                CartIcons.favourites,
+                color: Colors.black,
+              ),
+              activeIcon: Icon(
+                CartIcons.favourites,
+                color: Colors.redAccent,
+              ),
+              title: Text("Favourite")),
+          BubbleBottomBarItem(
+              backgroundColor: Colors.red,
+              icon: Icon(
+                CartIcons.cart,
+                color: Colors.black,
+              ),
+              activeIcon: Icon(
+                CartIcons.cart,
+                color: Colors.redAccent,
+              ),
+              title: Text("Order")),
+          BubbleBottomBarItem(
+              backgroundColor: Colors.red,
+              icon: Icon(
+                CartIcons.account,
+                color: Colors.black,
+              ),
+              activeIcon: Icon(
+                CartIcons.account,
+                color: Colors.redAccent,
+              ),
+              title: Text("Account")),
+        ],
+        // selectedItemColor: Colors.redAccent,
+        // unselectedItemColor: Colors.black,
+        // type: BottomNavigationBarType.shifting,
+        // currentIndex: _index,
+        // onTap: (index) {
+        //   setState(() {
+        //     _index = index;
+        //   });
+        // },
       ),
       body: _index == 0
           ? DashboardScreen(
               grocery: widget.grocery,
             )
           : (_index == 1
-              ? OrderDetailsPage()
+              ? FavoriteScreen()
               : (_index == 2
-                  ? CartPage(
-                      groceryId: this.widget.grocery.id,
-                    )
-                  : (_index == 3
-                      ? PaymentScreen(groceryId: this.widget.grocery.id)
-                      : Container()))),
+                  ? Orderspage()
+                  : (_index == 3 ? CustomerProfile() : Container()))),
     );
   }
 
-  Widget _buildAppBar() {
+  Widget _buildAppBar(BuildContext context) {
     return AppBar(
       centerTitle: true,
       backgroundColor: Colors.redAccent,
@@ -82,7 +144,7 @@ class _ShopScreenState extends State<ShopScreen> {
       elevation: 0,
       automaticallyImplyLeading: true,
       title: Text(
-        this.widget.grocery.name.toString(),
+        this.grocery.name.toString(),
         style: TextStyle(color: Colors.white),
       ),
       leading: IconButton(
@@ -92,54 +154,7 @@ class _ShopScreenState extends State<ShopScreen> {
           ),
           onPressed: () => Navigator.pop(context)),
       actions: [
-        Icon(Icons.notifications_none, color: Colors.white),
-        SizedBox(width: 10),
-        Stack(
-          children: [
-            IconButton(
-              icon: Icon(Icons.shopping_cart),
-              color: Colors.white,
-              onPressed: () {
-                CartPage(groceryId: this.widget.grocery.id);
-              },
-            ),
-            Provider.of<CartProvider>(context, listen: false)
-                        .cartItems
-                        .length ==
-                    0
-                ? new Container()
-                : new Positioned(
-                    top: 4.0,
-                    right: 4.0,
-                    child: new Stack(
-                      children: [
-                        Icon(
-                          Icons.brightness_1,
-                          size: 20.0,
-                          color: Colors.green[800],
-                        ),
-                        new Positioned(
-                          top: 4.0,
-                          right: 5.0,
-                          child: Center(
-                            child: Text(
-                              Provider.of<CartProvider>(context, listen: false)
-                                  .cartItems
-                                  .length
-                                  .toString(),
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 11.0,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                        )
-                      ],
-                    ),
-                  )
-          ],
-        ),
+        cartNotify(context),
         SizedBox(width: 10),
       ],
     );

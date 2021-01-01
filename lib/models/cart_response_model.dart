@@ -80,6 +80,7 @@ class CartItem {
     data['line_subtotal'] = this.lineSubtotal;
     data['line_total'] = this.lineTotal;
     data['variation_id'] = this.variationId;
+    data['attribute'] = "${this.attribute}, ${this.attributeValue}";
     return data;
   }
 }
