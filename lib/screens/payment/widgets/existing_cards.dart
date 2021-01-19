@@ -1,11 +1,14 @@
+import 'package:Uthbay/models/credit_card_model.dart';
 import 'package:Uthbay/models/order.dart';
 import 'package:Uthbay/provider/cart_provider.dart';
+import 'package:Uthbay/provider/customer_provider.dart';
 import 'package:Uthbay/screens/checkout/components/order_success.dart';
 import 'package:Uthbay/services/payment_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_credit_card/credit_card_widget.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:stripe_payment/stripe_payment.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 
@@ -86,6 +89,15 @@ class ExistingCardsPageState extends State<ExistingCardsPage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    setState(() {
+      Provider.of<CustomerProvider>(context, listen: false).fetchcreditCard();
+      ;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -93,25 +105,112 @@ class ExistingCardsPageState extends State<ExistingCardsPage> {
       ),
       body: Container(
         padding: EdgeInsets.all(20),
-        child: ListView.builder(
-          itemCount: cards.length,
-          itemBuilder: (BuildContext context, int index) {
-            var card = cards[index];
-            return InkWell(
-              onTap: () {
-                payViaExistingCard(context, card);
-              },
-              child: CreditCardWidget(
-                cardNumber: card['cardNumber'],
-                expiryDate: card['expiryDate'],
-                cardHolderName: card['cardHolderName'],
-                cvvCode: card['cvvCode'],
-                showBackView: false,
-              ),
-            );
+        child: new Consumer<CustomerProvider>(
+          builder: (context, provider, child) {
+            if (provider.creditCardModels != null &&
+                provider.totalcreditCardList > 0) {
+              return existingCard(provider.creditCardModels, context);
+            } else {
+              return shimmerList();
+            }
           },
         ),
       ),
+    );
+  }
+
+  Widget existingCard(List<CreditCardModel> cards, context) {
+    return ListView.builder(
+      itemCount: cards.length,
+      itemBuilder: (BuildContext context, int index) {
+        CreditCardModel card = cards[index];
+        var cardNumber = '';
+        for (int i = 0; i < card.cardNumber.length; i++) {
+          if (i > 8) {
+            if (card.cardNumber[i] == ' ') {
+              cardNumber += ' ';
+            } else {
+              cardNumber += '*';
+            }
+          } else {
+            cardNumber += card.cardNumber[i];
+          }
+        }
+        return InkWell(
+          onTap: () {
+            var creditCard = {
+              'cardNumber': card.cardNumber,
+              'expiryDate': card.expiryDate,
+              'cardHolderName': card.cardHolderName,
+              'cvvCode': card.cvvCode,
+              'showBackView': false,
+            };
+            payViaExistingCard(context, creditCard);
+          },
+          child: CreditCardWidget(
+            cardNumber: cardNumber,
+            expiryDate: card.expiryDate,
+            cardHolderName: card.cardHolderName,
+            cvvCode: card.cvvCode,
+            showBackView: card.isCvvFocused,
+          ),
+        );
+      },
+    );
+  }
+
+  Widget shimmerList() {
+    return ListView.builder(
+      itemCount: 4,
+      itemBuilder: (BuildContext context, int index) {
+        return Container(
+          margin: EdgeInsets.all(5),
+          padding: EdgeInsets.all(15),
+          width: MediaQuery.of(context).size.width,
+          decoration: BoxDecoration(
+            color: Colors.grey[200],
+            borderRadius: BorderRadius.circular(15),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Shimmer.fromColors(
+                baseColor: Colors.grey[500],
+                highlightColor: Colors.grey[400],
+                enabled: true,
+                child: Container(
+                  color: Colors.grey[500],
+                  width: MediaQuery.of(context).size.width,
+                  height: 25,
+                ),
+              ),
+              SizedBox(height: 20),
+              Shimmer.fromColors(
+                baseColor: Colors.grey[500],
+                highlightColor: Colors.grey[400],
+                enabled: true,
+                child: Container(
+                  color: Colors.grey[500],
+                  width: MediaQuery.of(context).size.width / 4,
+                  height: 25,
+                ),
+              ),
+              SizedBox(height: 20),
+              Shimmer.fromColors(
+                baseColor: Colors.grey[500],
+                highlightColor: Colors.grey[400],
+                enabled: true,
+                child: Container(
+                  color: Colors.grey[500],
+                  width: MediaQuery.of(context).size.width / 2,
+                  height: 25,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

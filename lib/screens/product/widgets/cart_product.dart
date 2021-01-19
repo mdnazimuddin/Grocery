@@ -29,7 +29,16 @@ class CartProduct extends StatelessWidget {
         width: 50,
         height: 150,
         alignment: Alignment.center,
-        child: Image.network(data.thumbnail, height: 150),
+        child: CircleAvatar(
+          backgroundColor: Colors.blueAccent.withOpacity(0.02),
+          child: ClipOval(
+            child: Image.network(
+              data.thumbnail,
+              height: 250,
+              fit: BoxFit.cover,
+            ),
+          ),
+        ),
       ),
       title: Padding(
         padding: EdgeInsets.all(5),

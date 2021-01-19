@@ -1,5 +1,3 @@
-import 'package:Uthbay/models/login_model.dart';
-import 'package:Uthbay/models/order.dart';
 import 'package:Uthbay/models/order_model.dart';
 import 'package:Uthbay/provider/grocery_provider.dart';
 import 'package:Uthbay/provider/order_provider.dart';
@@ -17,10 +15,10 @@ class _OrderspageState extends State<Orderspage> {
   @override
   void initState() {
     super.initState();
-    
+
     var grocery = Provider.of<GroceryProvider>(context, listen: false).grocery;
     var orderProvider = Provider.of<OrderProvider>(context, listen: false);
-    orderProvider.fetchOrders(grocery.id);
+    orderProvider.fetchGroceryOrders(grocery.id);
   }
 
   @override

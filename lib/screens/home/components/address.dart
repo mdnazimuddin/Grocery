@@ -50,9 +50,18 @@ class _AddressState extends State<Address> {
     }).catchError((e) {
       print(e);
     });
+    if (_currentPosition == null) {
+      print('Please Active Your Location.');
+      final snackBar = SnackBar(
+          content: Text("Please Active Your Location."),
+          duration: new Duration(milliseconds: 1500));
+      _scaffoldKey.currentState.showSnackBar(snackBar);
+    }
+    print(_currentPosition);
   }
 
   _getAddressFromLatLng() async {
+    print("Presh");
     try {
       // List<Placemark> p = await geolocator.placemarkFromCoordinates(
       //     _currentPosition.latitude, _currentPosition.longitude);
@@ -71,7 +80,9 @@ class _AddressState extends State<Address> {
         address.latitude = _currentPosition.latitude.toString();
         address.longitude = _currentPosition.longitude.toString();
 
+        print(isLocationStatus);
         isLocationStatus = true;
+        print(isLocationStatus);
         _currentAddress =
             "${place.locality}, ${place.postalCode}, ${place.country}";
       });
@@ -126,7 +137,7 @@ class _AddressState extends State<Address> {
         elevation: 5,
         leading: IconButton(
             icon: Icon(Icons.arrow_back_ios),
-            onPressed: () => Navigator.pop(context, false)),
+            onPressed: () => Navigator.pop(context)),
         actions: [
           this.isUpdate
               ? IconButton(

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:Uthbay/models/customer_address.dart';
 import 'package:Uthbay/models/grocery_list.dart';
 import 'package:Uthbay/provider/grocery_provider.dart';
+import 'package:Uthbay/provider/products_provider.dart';
 import 'package:Uthbay/screens/shop/shop_screen.dart';
 import 'package:Uthbay/screens/widgets/DrawerPage.dart';
 import 'package:Uthbay/screens/widgets/build_app_bar.dart';
@@ -94,8 +95,9 @@ class _BodyState extends State<Body> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      drawer:
-          DrawerPage.drawer(context, _scaffoldKey, firstName, email, imgUrl),
+      drawer: addressStatus
+          ? DrawerPage.drawer(context, _scaffoldKey, firstName, email, imgUrl)
+          : null,
       appBar: buildAppBar(context),
       body: addressStatus ? _uipage(context) : _initpage(context),
     );
@@ -139,7 +141,7 @@ class _BodyState extends State<Body> {
                       padding:
                           EdgeInsets.symmetric(vertical: 12, horizontal: 80),
                       onPressed: () {
-                        Navigator.pushReplacement(
+                        Navigator.push(
                             context,
                             PageTransition(
                                 type: PageTransitionType.rightToLeft,
@@ -254,10 +256,9 @@ class _BodyState extends State<Body> {
                     child: InkWell(
                       onTap: () => Navigator.push(
                           context,
-                          MaterialPageRoute(
-                              builder: (context) => Address(
-                                    isUpdate: true,
-                                  ))),
+                          PageTransition(
+                              type: PageTransitionType.rightToLeft,
+                              child: Address(isUpdate: true))),
                       child: Container(
                         child: Row(
                           children: [
@@ -289,7 +290,7 @@ class _BodyState extends State<Body> {
                       new EdgeInsets.symmetric(vertical: 10.0, horizontal: 5.0),
                   border: OutlineInputBorder(
                     borderSide: BorderSide(
-                      color: Colors.redAccent, //this has no effect
+                      color: Colors.redAccent,
                     ),
                     borderRadius: BorderRadius.circular(5.0),
                   ),
@@ -373,10 +374,11 @@ class _BodyState extends State<Body> {
               .setGrocery(grocery);
           Navigator.push(
               context,
-              MaterialPageRoute(
-                  builder: (context) => ShopScreen(
-                        grocery: grocery,
-                      )));
+              PageTransition(
+                  type: PageTransitionType.rightToLeft,
+                  child: ShopScreen(
+                    grocery: grocery,
+                  )));
         },
         child: Material(
           color: Colors.white,
@@ -449,6 +451,17 @@ class _BodyState extends State<Body> {
                             fontWeight: FontWeight.w700,
                           ),
                         ),
+                        grocery.claimed
+                            ? Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: SizedBox(
+                                  width: 15,
+                                  height: 15,
+                                  child: Image.asset(
+                                      "assets/images/varifacy_icon.png"),
+                                ),
+                              )
+                            : SizedBox()
                       ],
                     ),
                     subtitle: Text(

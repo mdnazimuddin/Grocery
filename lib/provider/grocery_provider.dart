@@ -1,10 +1,11 @@
 import 'package:Uthbay/models/grocery_list.dart';
 import 'package:Uthbay/models/payment_system.dart';
 import 'package:Uthbay/models/stripe_model.dart';
+import 'package:Uthbay/provider/products_provider.dart';
 import 'package:Uthbay/services/api_service.dart';
 import 'package:flutter/material.dart';
 
-enum LoadMoreStatus { INITIAL, LOADING, STABLE }
+// enum LoadMoreStatus { INITIAL, LOADING, STABLE }
 
 class GroceryProvider with ChangeNotifier {
   APIService _apiService;
@@ -16,6 +17,10 @@ class GroceryProvider with ChangeNotifier {
   List<GroceryList> get allGrocery => _groceryList;
   double get totalRecords => _groceryList.length.toDouble();
 
+  List<GroceryList> _favouriteGroceryList;
+  List<GroceryList> get allFavouriteGrocery => _favouriteGroceryList;
+  double get totalFavouriteRecords => _favouriteGroceryList.length.toDouble();
+
   PaymentSystem _paymentSystem;
   PaymentSystem get paymentSystem => _paymentSystem;
 
@@ -24,6 +29,9 @@ class GroceryProvider with ChangeNotifier {
 
   bool _dataNotFound = false;
   bool get dataNotFound => _dataNotFound;
+
+  bool _favouriteGrocery = false;
+  bool get favouriteGrocery => _favouriteGrocery;
 
   LoadMoreStatus _loadMoreStatus = LoadMoreStatus.STABLE;
   getLoadMoreStatus() => _loadMoreStatus;
@@ -72,6 +80,37 @@ class GroceryProvider with ChangeNotifier {
     _stripeAccount = new StripeAccount();
 
     _stripeAccount = await _apiService.fetchStripeAccount(groceryId);
+    notifyListeners();
+  }
+
+  fetchFavouriteGrocery() async {
+    _apiService = APIService();
+    _favouriteGroceryList = List<GroceryList>();
+    List<GroceryList> itemModel = await _apiService.fetchFavouriteGrocery();
+    if (itemModel.length > 0) {
+      _favouriteGroceryList.addAll(itemModel);
+    } else {
+      _dataNotFound = true;
+    }
+    setLoadingState(LoadMoreStatus.STABLE);
+    notifyListeners();
+  }
+
+  favouriteGroceryStatus(String groceryId) async {
+    _apiService = APIService();
+    _favouriteGrocery = await _apiService.favouriteGroceryStatus(groceryId);
+    notifyListeners();
+  }
+
+  addFavouriteGrocery(String groceryId) async {
+    _apiService = APIService();
+    _favouriteGrocery = await _apiService.addFavouriteGrocery(groceryId);
+    notifyListeners();
+  }
+
+  deleteFavouriteGrocery(String groceryId) async {
+    _apiService = APIService();
+    _favouriteGrocery = await _apiService.deleteFavouriteGrocery(groceryId);
     notifyListeners();
   }
 }

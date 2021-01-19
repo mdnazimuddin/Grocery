@@ -42,8 +42,8 @@ class _BodyState extends State<Body> {
         splash: SizedBox(
           width: MediaQuery.of(context).size.width * .5,
           child: Image.asset(
-            "assets/logo/uthbay.png",
-            fit: BoxFit.cover,
+            "assets/logo/grocery_logo_one.png",
+            fit: BoxFit.fitHeight,
           ),
         ),
         screenFunction: () async {

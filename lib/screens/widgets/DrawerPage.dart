@@ -1,5 +1,8 @@
+import 'package:Uthbay/screens/home/components/favourite_grocery_screen.dart';
+import 'package:Uthbay/screens/home/components/orders.dart';
 import 'package:Uthbay/screens/order/orders_page.dart';
-import 'package:Uthbay/screens/shop/components/customer_profile.dart';
+import 'package:Uthbay/screens/profile/components/customer_profile.dart';
+import 'package:Uthbay/screens/profile/profile_screen.dart';
 import 'package:Uthbay/screens/signin/signin_screen.dart';
 import 'package:Uthbay/services/api_service.dart';
 import 'package:flutter/material.dart';
@@ -11,7 +14,7 @@ class DrawerPage {
   static Widget drawer(BuildContext context, _scaffoldKey, String firstName,
       String email, String imgUrl) {
     APIService apiService = new APIService();
-    print(imgUrl != 'null' || imgUrl != null);
+    print("Image URL ${imgUrl == 'null'}");
     return Drawer(
       child: ListView(
         children: <Widget>[
@@ -29,9 +32,14 @@ class DrawerPage {
                   height: 50,
                   child: CircleAvatar(
                     backgroundColor: Colors.blueAccent.withOpacity(0.02),
-                    child: imgUrl != 'null'
-                        ? Image.network(imgUrl)
-                        : Image.asset('assets/images/boy.png'),
+                    child: ClipOval(
+                      child: imgUrl == null || imgUrl == 'null'
+                          ? Image.asset('assets/images/boy.png')
+                          : Image.network(imgUrl,
+                              width: MediaQuery.of(context).size.width * 0.50,
+                              height: MediaQuery.of(context).size.width * 0.50,
+                              fit: BoxFit.cover),
+                    ),
                   ),
                 ),
               ),
@@ -53,30 +61,28 @@ class DrawerPage {
               title: Text('Profile', style: TextStyle(color: Colors.black)),
               onTap: () {
                 Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => CustomerProfile()));
+                    MaterialPageRoute(builder: (context) => ProfileScreen()));
               }),
           ListTile(
               leading: Icon(Icons.shopping_bag),
               title: Text('My Orders', style: TextStyle(color: Colors.black)),
               onTap: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => Orderspage()));
+                Navigator.push(
+                    context,
+                    PageTransition(
+                        type: PageTransitionType.rightToLeft,
+                        child: MyOrderspage()));
               }),
           ListTile(
               leading: Icon(Icons.add_business_sharp),
               title: Text('Favourite Grocery',
                   style: TextStyle(color: Colors.black)),
               onTap: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => CustomerProfile()));
-              }),
-          ListTile(
-              leading: Icon(Icons.edit),
-              title:
-                  Text('Edit Profile', style: TextStyle(color: Colors.black)),
-              onTap: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => CustomerProfile()));
+                Navigator.push(
+                    context,
+                    PageTransition(
+                        type: PageTransitionType.rightToLeft,
+                        child: FavoriteGroceryScreen()));
               }),
           ListTile(
               leading: Icon(Icons.notifications),
@@ -95,21 +101,17 @@ class DrawerPage {
               await dialog.show();
               await apiService.logoutCustomer().then((ret) async {
                 await dialog.hide();
-                if (ret) {
-                  final snackBar = SnackBar(
-                      content: Text("Logout Successfull"),
-                      duration: new Duration(milliseconds: 500));
-                  _scaffoldKey.currentState
-                      .showSnackBar(snackBar)
-                      .closed
-                      .then((_) {
-                    Navigator.pushReplacement(
-                        context,
-                        PageTransition(
-                            type: PageTransitionType.rightToLeft,
-                            child: SignInScreen()));
-                  });
-                }
+                if (ret) {}
+              });
+              final snackBar = SnackBar(
+                  content: Text("Logout Successfull"),
+                  duration: new Duration(milliseconds: 500));
+              _scaffoldKey.currentState.showSnackBar(snackBar).closed.then((_) {
+                Navigator.pushReplacement(
+                    context,
+                    PageTransition(
+                        type: PageTransitionType.rightToLeft,
+                        child: SignInScreen()));
               });
             },
           ),

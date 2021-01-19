@@ -170,12 +170,13 @@ class _BodyState extends State<Body> {
                                       .showSnackBar(snackBar)
                                       .closed
                                       .then((_) {
-                                    Navigator.pushReplacement(
+                                    Navigator.pushAndRemoveUntil(
                                         context,
                                         PageTransition(
                                             type:
                                                 PageTransitionType.rightToLeft,
-                                            child: HomeScreen()));
+                                            child: HomeScreen()),
+                                        ModalRoute.withName('/home'));
                                   });
                                 } else {
                                   final snackBar = SnackBar(

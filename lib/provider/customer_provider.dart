@@ -15,7 +15,8 @@ class CustomerProvider with ChangeNotifier {
   double get totalRecords => _orderList.length.toDouble();
 
   List<CreditCardModel> _creditCardList;
-  List<CreditCardModel> get creditCardModel => _creditCardList;
+  List<CreditCardModel> get creditCardModels => _creditCardList;
+  double get totalcreditCardList => _creditCardList.length.toDouble();
 
   CustomerProvider() {
     resetStreams();

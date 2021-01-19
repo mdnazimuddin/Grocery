@@ -1,6 +1,7 @@
 import 'package:Uthbay/models/product.dart';
 import 'package:Uthbay/screens/product/details/product_details.dart';
 import 'package:flutter/material.dart';
+import 'package:page_transition/page_transition.dart';
 
 class ProductCard extends StatelessWidget {
   Product data;
@@ -11,10 +12,11 @@ class ProductCard extends StatelessWidget {
       onTap: () {
         Navigator.push(
             context,
-            MaterialPageRoute(
-                builder: (context) => ProductDetails(
-                      product: data,
-                    )));
+            PageTransition(
+                type: PageTransitionType.rightToLeft,
+                child: ProductDetails(
+                  product: data,
+                )));
       },
       child: Container(
         decoration: BoxDecoration(
@@ -65,7 +67,7 @@ class ProductCard extends StatelessWidget {
                         Image.network(
                           data.images.length > 0
                               ? data.images[0].src
-                              : "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/768px-No_image_available.svg.png",
+                              : "https://grocery.uthbay.com/images/no_img.png",
                           height: 160,
                         ),
                       ],

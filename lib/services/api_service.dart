@@ -139,6 +139,37 @@ class APIService {
     return ret;
   }
 
+  Future<bool> updateProfile(CustomerModel model) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool ret = false;
+    try {
+      print(Config.customerURL + Config.updateProfileURL);
+      print(model.toJson());
+      var response = await Dio().post(
+        Config.customerURL + Config.updateProfileURL,
+        options: new Options(headers: {
+          'Accept': 'application/json',
+          'Authorization': prefs.getString('token'),
+        }),
+        data: model.toJson(),
+      );
+      print(response.data['data']['img_src']);
+      if (response.statusCode == 200) {
+        prefs.setString('first_name', response.data['data']['first_name']);
+        prefs.setString('last_name', response.data['data']['last_name']);
+        prefs.setString('email', response.data['data']['email']);
+        prefs.setString('phone', response.data['data']['phone']);
+        prefs.setString('img_src', response.data['data']['img_src']);
+        ret = true;
+      }
+    } on DioError catch (e) {
+      print(e.message);
+      ret = false;
+    }
+
+    return ret;
+  }
+
   Future<bool> createAddress(CustomerAddress address) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool ret = false;
@@ -338,6 +369,135 @@ class APIService {
     return categories;
   }
 
+  Future<bool> fetchFavouriteGrocerys(String groceryId) async {
+    bool status = false;
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    try {
+      var url = Config.customerURL + '/addFavouriteGrocery';
+      Map<String, dynamic> data = {'grocery_id': groceryId};
+      var response = await Dio().post(
+        url,
+        options: new Options(headers: {
+          'Accept': 'application/json',
+          'Authorization': prefs.getString('token'),
+        }),
+        data: data,
+      );
+      print(response.data['status']);
+      if (response.statusCode == 200) {
+        status = response.data['status'];
+      }
+    } on DioError catch (e) {
+      print(e.message);
+    }
+    return status;
+  }
+
+  Future<List<GroceryList>> fetchFavouriteGrocery() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<GroceryList> groceriesList = new List<GroceryList>();
+
+    try {
+      String parameter = "favouriteGroceries";
+
+      var groceriesURL = Config.customerURL + parameter.toString();
+      print(groceriesURL);
+      var response = await Dio().post(
+        groceriesURL,
+        options: new Options(headers: {
+          'Accept': 'application/json',
+          'Authorization': prefs.getString('token'),
+        }),
+      );
+      if (response.statusCode == 200 && response.data.isNotEmpty) {
+        for (var item in response.data['data']) {
+          GroceryList _groceries = GroceryList.fromJson(item);
+          groceriesList.add(_groceries);
+        }
+      } else {
+        return [];
+      }
+    } on DioError catch (e) {
+      print(e.message);
+    }
+    return groceriesList;
+  }
+
+  Future<bool> favouriteGroceryStatus(String groceryId) async {
+    bool status = false;
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    try {
+      var url = Config.customerURL + 'favouriteGroceryStatus';
+      Map<String, dynamic> data = {'grocery_id': groceryId};
+      print(url);
+      var response = await Dio().post(
+        url,
+        options: new Options(headers: {
+          'Accept': 'application/json',
+          'Authorization': prefs.getString('token'),
+        }),
+        data: data,
+      );
+      print(response.data['status']);
+      if (response.statusCode == 200) {
+        status = response.data['status'];
+      }
+    } on DioError catch (e) {
+      print(e.message);
+    }
+    return status;
+  }
+
+  Future<bool> addFavouriteGrocery(String groceryId) async {
+    bool status = false;
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    try {
+      var url = Config.customerURL + 'addFavouriteGrocery';
+      Map<String, dynamic> data = {'grocery_id': groceryId};
+      var response = await Dio().post(
+        url,
+        options: new Options(headers: {
+          'Accept': 'application/json',
+          'Authorization': prefs.getString('token'),
+        }),
+        data: data,
+      );
+      if (response.statusCode == 200) {
+        status = true;
+      }
+    } on DioError catch (e) {
+      print(e.message);
+    }
+    return status;
+  }
+
+  Future<bool> deleteFavouriteGrocery(String groceryId) async {
+    bool status = false;
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    try {
+      var url = Config.customerURL + 'deleteFavouriteGrocery';
+      Map<String, dynamic> data = {'grocery_id': groceryId};
+      var response = await Dio().post(
+        url,
+        options: new Options(headers: {
+          'Accept': 'application/json',
+          'Authorization': prefs.getString('token'),
+        }),
+        data: data,
+      );
+      if (response.statusCode == 200) {
+        status = false;
+      }
+    } on DioError catch (e) {
+      print(e.message);
+    }
+    return status;
+  }
+
   Future<List> getTags(String url) async {
     List tags = new List();
 
@@ -370,6 +530,7 @@ class APIService {
     dynamic pageNumber,
     dynamic pageSize,
     dynamic strSerach,
+    dynamic groceryId,
     dynamic tagId,
     dynamic categoryId,
     List<int> productIds,
@@ -389,6 +550,9 @@ class APIService {
       if (pageNumber != null) {
         parameter += "&page=${pageNumber.toString()}";
       }
+      if (groceryId != null) {
+        parameter += "&grocery=$groceryId";
+      }
       if (tagId != null) {
         parameter += "&tag=$tagId";
       }
@@ -407,13 +571,14 @@ class APIService {
       var productUrl = Config.productURL + parameter.toString();
       print(productUrl);
       var response = await Dio().get(productUrl);
-      // print(response.data['data']['type']);
+      print(response.data['data']);
       if (response.statusCode == 200) {
         for (dynamic item in response.data['data']) {
           Product _product = Product.fromJson(item);
           products.add(_product);
         }
       }
+      print(response.data['data']);
     } on DioError catch (e) {
       print(e.message);
     }
@@ -441,6 +606,127 @@ class APIService {
       print(e.message);
     }
     return responseModel;
+  }
+
+  Future<List<Product>> fetchFavouriteGroceryProduct(String groceryId) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<Product> products = new List<Product>();
+
+    try {
+      String parameter = "favouriteGroceryProducts";
+
+      var productURL = Config.customerURL + parameter.toString();
+      print(productURL);
+      Map<String, dynamic> data = {'grocery_id': groceryId};
+      var response = await Dio().post(
+        productURL,
+        options: new Options(headers: {
+          'Accept': 'application/json',
+          'Authorization': prefs.getString('token'),
+        }),
+        data: data,
+      );
+      print(response.data);
+      if (response.statusCode == 200 && response.data.isNotEmpty) {
+        if (response.statusCode == 200) {
+          for (dynamic item in response.data['data']) {
+            Product _product = Product.fromJson(item);
+            products.add(_product);
+          }
+        }
+      } else {
+        return [];
+      }
+    } on DioError catch (e) {
+      print(e.message);
+    }
+    return products;
+  }
+
+  Future<bool> favouriteGroceryProductStatus(
+      String groceryId, String productId) async {
+    bool status = false;
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    try {
+      var url = Config.customerURL + 'favouriteProductStatus';
+      Map<String, dynamic> data = {
+        'grocery_id': groceryId,
+        'product_id': productId
+      };
+      print(url);
+      var response = await Dio().post(
+        url,
+        options: new Options(headers: {
+          'Accept': 'application/json',
+          'Authorization': prefs.getString('token'),
+        }),
+        data: data,
+      );
+      print(response.data['status']);
+      if (response.statusCode == 200) {
+        status = response.data['status'];
+      }
+    } on DioError catch (e) {
+      print(e.message);
+    }
+    return status;
+  }
+
+  Future<bool> addFavouriteGroceryProduct(
+      String groceryId, String productId) async {
+    bool status = false;
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    try {
+      var url = Config.customerURL + 'addFavouriteGroceryProduct';
+      Map<String, dynamic> data = {
+        'grocery_id': groceryId,
+        'product_id': productId
+      };
+      var response = await Dio().post(
+        url,
+        options: new Options(headers: {
+          'Accept': 'application/json',
+          'Authorization': prefs.getString('token'),
+        }),
+        data: data,
+      );
+      if (response.statusCode == 200) {
+        status = true;
+      }
+    } on DioError catch (e) {
+      print(e.message);
+    }
+    return status;
+  }
+
+  Future<bool> deleteFavouriteGroceryProduct(
+      String groceryId, String productId) async {
+    bool status = false;
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    try {
+      var url = Config.customerURL + 'deleteFavouriteGroceryProduct';
+      Map<String, dynamic> data = {
+        'grocery_id': groceryId,
+        'product_id': productId
+      };
+      var response = await Dio().post(
+        url,
+        options: new Options(headers: {
+          'Accept': 'application/json',
+          'Authorization': prefs.getString('token'),
+        }),
+        data: data,
+      );
+      if (response.statusCode == 200) {
+        status = false;
+      }
+    } on DioError catch (e) {
+      print(e.message);
+    }
+    return status;
   }
 
   Future<CartResponseModel> addtoCart(CartRequestModel model) async {
@@ -561,7 +847,7 @@ class APIService {
         data: data,
       );
       print(response.data);
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 && response.data != null) {
         responseModel = CartResponseModel.fromJson(response.data);
       }
     } on DioError catch (e) {
@@ -705,7 +991,7 @@ class APIService {
     List<CreditCardModel> creditCards = new List<CreditCardModel>();
 
     try {
-      var url = Config.customerURL + Config.saveCardURL;
+      var url = Config.customerURL + Config.getCardURL;
       print(url);
       var response = await Dio().post(
         url,
@@ -755,7 +1041,35 @@ class APIService {
     return isOrderCreated;
   }
 
-  Future<List<OrderModel>> getOrders(String groceryId) async {
+  Future<List<OrderModel>> getOrders() async {
+    List<OrderModel> orders = new List<OrderModel>();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    try {
+      var url = Config.customerURL + Config.orderListURL;
+
+      print(url);
+      var response = await Dio().post(
+        url,
+        options: new Options(headers: {
+          'Accept': 'application/json',
+          'Authorization': prefs.getString('token'),
+        }),
+      );
+      print(response);
+      if (response.statusCode == 200) {
+        for (dynamic item in response.data['data']) {
+          OrderModel _order = OrderModel.fromJson(item);
+          orders.add(_order);
+        }
+      }
+    } on DioError catch (e) {
+      print(e.message);
+    }
+
+    return orders;
+  }
+
+  Future<List<OrderModel>> getGroceryOrders(String groceryId) async {
     List<OrderModel> orders = new List<OrderModel>();
     SharedPreferences prefs = await SharedPreferences.getInstance();
     Map<String, dynamic> data = {
@@ -763,7 +1077,7 @@ class APIService {
       'grocery_id': groceryId,
     };
     try {
-      var url = Config.customerURL + Config.orderListURL;
+      var url = Config.customerURL + 'groceryOrders';
 
       print(url);
       var response = await Dio().post(

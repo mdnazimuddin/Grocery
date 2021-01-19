@@ -32,7 +32,7 @@ class _PaymentScreenState extends CheckoutBasePageState<PaymentScreen> {
           secret: stripe.secret,
           merchantId: stripe.merchantId,
           androidPayMode: stripe.androidPayMode);
-      print("Stripe Account ${stripe.androidPayMode}");
+      print("Stripe Account ${stripe.secret}");
     });
   }
 

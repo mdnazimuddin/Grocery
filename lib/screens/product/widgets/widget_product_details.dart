@@ -3,6 +3,7 @@ import 'package:Uthbay/models/product.dart';
 import 'package:Uthbay/models/variable_product.dart';
 import 'package:Uthbay/provider/cart_provider.dart';
 import 'package:Uthbay/provider/loader_provider.dart';
+import 'package:Uthbay/screens/product/widgets/favourite_product_icon.dart';
 import 'package:Uthbay/screens/product/widgets/related_products.dart';
 import 'package:Uthbay/utilis/custom_stepper.dart';
 import 'package:Uthbay/utilis/expand_text.dart';
@@ -13,7 +14,8 @@ import 'package:provider/provider.dart';
 class ProductDetailsWidget extends StatelessWidget {
   Product data;
   List<VariableProduct> variableProducts;
-  ProductDetailsWidget({this.data, this.variableProducts});
+  var scaffoldKey = GlobalKey<ScaffoldState>();
+  ProductDetailsWidget({this.data, this.variableProducts, this.scaffoldKey});
   int qty = 0;
   var dropdownValue = null;
 
@@ -54,14 +56,22 @@ class ProductDetailsWidget extends StatelessWidget {
                     ),
                   ),
                 ),
-                Text(
-                  data.name,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 25,
-                    fontWeight: FontWeight.bold,
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      data.name,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 25,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    favouriteProductIcon(context, scaffoldKey,
+                        groceryId: data.groceryID, productId: data.id),
+                  ],
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,

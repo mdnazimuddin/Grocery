@@ -68,7 +68,7 @@ class Order {
         json['billing'] != null ? Billing.fromJson(json['billing']) : null;
     payment =
         json['payment'] != null ? Payment.fromJson(json['payment']) : null;
-
+    print("Test: ${json['items']}");
     if (json['items'] != null) {
       items = new List<CartItem>();
       for (var item in json['items']) {

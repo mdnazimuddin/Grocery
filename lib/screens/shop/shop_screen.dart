@@ -1,16 +1,15 @@
 import 'package:Uthbay/models/grocery_list.dart';
 import 'package:Uthbay/provider/cart_provider.dart';
-import 'package:Uthbay/provider/cart_provider.dart';
 import 'package:Uthbay/provider/grocery_provider.dart';
-import 'package:Uthbay/screens/order/components/order_details.dart';
 import 'package:Uthbay/screens/order/orders_page.dart';
-import 'package:Uthbay/screens/payment/payment_screen.dart';
-import 'package:Uthbay/screens/product/cart/cart_page.dart';
-import 'package:Uthbay/screens/shop/components/customer_profile.dart';
+import 'package:Uthbay/screens/profile/components/customer_profile.dart';
+import 'package:Uthbay/screens/shop/components/search_products.dart';
+import 'package:Uthbay/screens/widgets/favourite_grocery_icon.dart';
 import 'package:bubble_bottom_bar/bubble_bottom_bar.dart';
 import 'package:Uthbay/screens/widgets/cart_notify.dart';
 import 'package:Uthbay/utilis/cart_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
 
 import 'components/dashboard_screen.dart';
@@ -25,6 +24,7 @@ class ShopScreen extends StatefulWidget {
 
 class _ShopScreenState extends State<ShopScreen> {
   GroceryList grocery;
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   int _index = 0;
   // List<Widget> _widgetList = [
   //   DashboardScreen(url),
@@ -37,7 +37,10 @@ class _ShopScreenState extends State<ShopScreen> {
     // TODO: implement initState
     super.initState();
     setState(() {
-      grocery = Provider.of<GroceryProvider>(context, listen: false).grocery;
+      var groceryProvider =
+          Provider.of<GroceryProvider>(context, listen: false);
+      grocery = groceryProvider.grocery;
+      groceryProvider.favouriteGroceryStatus(grocery.id);
       cartProcider();
     });
   }
@@ -50,9 +53,17 @@ class _ShopScreenState extends State<ShopScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: _buildAppBar(context),
-      floatingActionButton:
-          FloatingActionButton(onPressed: () {}, child: Icon(CartIcons.search)),
+      floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            Navigator.push(
+                context,
+                PageTransition(
+                    type: PageTransitionType.bottomToTop,
+                    child: SearchProducts()));
+          },
+          child: Icon(CartIcons.search)),
       floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
       bottomNavigationBar: BubbleBottomBar(
         opacity: .2,
@@ -155,7 +166,8 @@ class _ShopScreenState extends State<ShopScreen> {
           onPressed: () => Navigator.pop(context)),
       actions: [
         cartNotify(context),
-        SizedBox(width: 10),
+        // SizedBox(width: 5),
+        favouriteGroceryIcon(context, _scaffoldKey),
       ],
     );
   }

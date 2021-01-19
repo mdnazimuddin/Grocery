@@ -10,6 +10,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
+import 'package:shimmer/shimmer.dart';
 
 class CartPage extends StatefulWidget {
   @override
@@ -179,8 +180,45 @@ class _CartPageState extends State<CartPage> {
             ),
           );
         } else {
-          return Center(child: CircularProgressIndicator());
+          return Shimmer.fromColors(
+            baseColor: Colors.grey[900],
+            highlightColor: Colors.grey[200],
+            enabled: true,
+            child: shimmerCartProductList(),
+          );
         }
+      },
+    );
+  }
+
+  Widget shimmerCartProductList() {
+    return ListView.builder(
+      itemCount: 8,
+      itemBuilder: (_, __) {
+        return ListTile(
+          // contentPadding: EdgeInsets.symmetric(horizontal: 15.0, vertical: 15.0),
+          leading: CircleAvatar(
+            backgroundColor: Colors.blueAccent.withOpacity(0.02),
+            child: ClipOval(
+              child: Container(
+                width: 148.0,
+                height: 148.0,
+                color: Colors.black12,
+              ),
+            ),
+          ),
+          title: Container(
+            width: 48.0,
+            height: 10.0,
+            color: Colors.black12,
+          ),
+          subtitle: Container(
+            width: 48.0,
+            height: 10.0,
+            color: Colors.black12,
+          ),
+          trailing: Icon(Icons.arrow_forward_ios, color: Colors.black12),
+        );
       },
     );
   }

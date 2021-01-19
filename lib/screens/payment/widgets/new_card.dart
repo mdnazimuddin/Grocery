@@ -29,7 +29,7 @@ class _NewCardsPageState extends State<NewCardsPage> {
   @override
   void initState() {
     super.initState();
-    StripeService.init();
+    // StripeService.init();
   }
 
   @override
@@ -100,7 +100,7 @@ class _NewCardsPageState extends State<NewCardsPage> {
         cardHolderName.isEmpty ||
         cvvCode.isEmpty) {
       final snackBar = SnackBar(
-          content: Text("Wrong! Empty Card Fild"),
+          content: Text("Wrong! Empty Card failed"),
           duration: new Duration(milliseconds: 1200));
       _scaffoldKey.currentState.showSnackBar(snackBar);
     } else {

@@ -123,7 +123,7 @@ class _ProductScreenState extends BaseScreenState<ProductScreen> {
         )
       ],
     );
-    ;
+    
   }
 
   Widget _productFilters() {

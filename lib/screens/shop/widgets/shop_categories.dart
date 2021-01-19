@@ -1,7 +1,9 @@
 import 'package:Uthbay/models/grocery.dart';
 import 'package:Uthbay/screens/product/product_screen.dart';
+import 'package:Uthbay/screens/shop/components/category_list.dart';
 import 'package:Uthbay/services/api_service.dart';
 import 'package:flutter/material.dart';
+import 'package:page_transition/page_transition.dart';
 
 class WidgetCategory extends StatefulWidget {
   final String url;
@@ -37,12 +39,21 @@ class _WidgetCategoryState extends State<WidgetCategory> {
                 ),
               ),
               Padding(
-                padding: EdgeInsets.only(right: 16, top: 5),
-                child: Text(
-                  'View All',
-                  style: TextStyle(color: Colors.redAccent),
+                padding: EdgeInsets.only(left: 16, top: 4),
+                child: FlatButton(
+                  child: Text(
+                    'View All',
+                    style: TextStyle(color: Colors.redAccent),
+                  ),
+                  onPressed: () {
+                    Navigator.push(
+                        context,
+                        PageTransition(
+                            type: PageTransitionType.rightToLeft,
+                            child: CategoryList()));
+                  },
                 ),
-              )
+              ),
             ],
           ),
           _categoriesList()

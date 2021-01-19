@@ -18,21 +18,24 @@ class StripeService {
       String secret,
       String merchantId,
       String androidPayMode}) {
-    StripeService.secret = secret;
+    StripeService.secret = '${secret}';
     StripePayment.setOptions(StripeOptions(
-        publishableKey: publishableKey,
+        publishableKey: '${publishableKey}',
         merchantId: merchantId,
         androidPayMode: androidPayMode));
+    print(StripeService.secret);
   }
 
   static Future<StripeTransactionResponse> payViaExistingCard(
       {String amount, String currency, CreditCard card}) async {
     print(StripeService.secret);
+    print("currency: ${currency}");
     try {
       var paymentMethod = await StripePayment.createPaymentMethod(
           PaymentMethodRequest(card: card));
       var paymentIntent =
           await StripeService.createPaymentIntent(amount, currency);
+
       var response = await StripePayment.confirmPaymentIntent(PaymentIntent(
           clientSecret: paymentIntent['client_secret'],
           paymentMethodId: paymentMethod.id));
@@ -51,6 +54,7 @@ class StripeService {
     } on PlatformException catch (err) {
       return StripeService.getPlatformExceptionErrorResult(err);
     } catch (err) {
+      print(err);
       return new StripeTransactionResponse(
           message: 'Transaction failed: ${err.toString()}', success: false);
     }

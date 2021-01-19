@@ -3,6 +3,7 @@ import 'package:Uthbay/screens/product/details/product_details.dart';
 import 'package:Uthbay/screens/product/product_screen.dart';
 import 'package:Uthbay/services/api_service.dart';
 import 'package:flutter/material.dart';
+import 'package:page_transition/page_transition.dart';
 
 class WidgetShopProducts extends StatefulWidget {
   String labelName;
@@ -47,8 +48,9 @@ class _WidgetShopProductsState extends State<WidgetShopProducts> {
                   onPressed: () {
                     Navigator.push(
                         context,
-                        MaterialPageRoute(
-                            builder: (context) => ProductScreen(
+                        PageTransition(
+                            type: PageTransitionType.rightToLeft,
+                            child: ProductScreen(
                                 tagId: int.parse(this.widget.tagId))));
                   },
                 ),
@@ -93,10 +95,11 @@ class _WidgetShopProductsState extends State<WidgetShopProducts> {
             onTap: () {
               Navigator.push(
                   context,
-                  MaterialPageRoute(
-                      builder: (context) => ProductDetails(
-                            product: data,
-                          )));
+                  PageTransition(
+                      type: PageTransitionType.rightToLeft,
+                      child: ProductDetails(
+                        product: data,
+                      )));
             },
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
@@ -132,10 +135,8 @@ class _WidgetShopProductsState extends State<WidgetShopProducts> {
                         ),
                       ),
                       Flexible(
-                        child: Image.network(
-                          data.images[0].src,
-                          height: 120,
-                        ),
+                        child: Image.network(data.images[0].src,
+                            height: 120, fit: BoxFit.cover),
                       ),
                     ],
                   ),

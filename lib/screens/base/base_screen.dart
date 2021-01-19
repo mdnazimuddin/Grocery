@@ -13,10 +13,12 @@ class BaseScreen extends StatefulWidget {
 }
 
 class BaseScreenState<T extends BaseScreen> extends State<T> {
+  final scaffoldKey = GlobalKey<ScaffoldState>();
   @override
   Widget build(BuildContext context) {
     return Consumer<LoaderProvider>(builder: (context, loaderModel, child) {
       return Scaffold(
+        key: scaffoldKey,
         appBar: _buildAppBar(context),
         body: ProgressHUD(
           child: pageUI(),

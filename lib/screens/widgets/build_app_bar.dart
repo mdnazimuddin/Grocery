@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-Widget buildAppBar(context) {
+Widget buildAppBar(context, {title,action}) {
   return AppBar(
     iconTheme: IconThemeData(
       color: Colors.white, //change your color here
@@ -10,7 +10,8 @@ Widget buildAppBar(context) {
     brightness: Brightness.dark,
     elevation: 0,
     automaticallyImplyLeading: true,
-    title: applogo(context),
+    title: title ?? applogo(context),
+    actions: action ?? [],
   );
 }
 

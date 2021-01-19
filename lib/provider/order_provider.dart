@@ -20,12 +20,23 @@ class OrderProvider with ChangeNotifier {
     _apiService = APIService();
   }
 
-  fetchOrders(String groceryId) async {
-    List<OrderModel> orderList = await _apiService.getOrders(groceryId);
+  fetchOrders() async {
+    List<OrderModel> orderList = await _apiService.getOrders();
 
-    if (_orderList == null) {
-      _orderList = new List<OrderModel>();
+    _orderList = new List<OrderModel>();
+
+    if (orderList.length > 0) {
+      _orderList = [];
+      _orderList.addAll(orderList);
     }
+
+    notifyListeners();
+  }
+
+  fetchGroceryOrders(String groceryId) async {
+    List<OrderModel> orderList = await _apiService.getGroceryOrders(groceryId);
+
+    _orderList = new List<OrderModel>();
 
     if (orderList.length > 0) {
       _orderList = [];
@@ -36,9 +47,7 @@ class OrderProvider with ChangeNotifier {
   }
 
   fetchOrder(int orderId) async {
-    if (_order == null) {
-      _order = new Order();
-    }
+   _order = new Order();
 
     _order = await _apiService.getOrder(orderId);
 
