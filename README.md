@@ -1,6 +1,6 @@
-# Uthbay
+# Grocery
 
-Uthbay Grocery App 
+ Grocery App 
 
 ## Getting Started
 
