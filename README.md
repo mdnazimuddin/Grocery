@@ -1,6 +1,6 @@
 # Uthbay
 
-A new Flutter project.
+Uthbay Grocery App 
 
 ## Getting Started
 
